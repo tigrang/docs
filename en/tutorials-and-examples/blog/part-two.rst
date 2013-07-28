@@ -1,6 +1,5 @@
-##############################
 Blog Tutorial - Adding a layer
-##############################
+******************************
 
 Create a Post Model
 ===================
@@ -14,7 +13,6 @@ CakePHP's model class files go in ``/app/Model``, and the file
 we'll be creating will be saved to ``/app/Model/Post.php``. The
 completed file should look like this::
 
-    <?php
     class Post extends AppModel {
     }
 
@@ -25,10 +23,10 @@ in the PostsController, and will be tied to a database table called
 
 .. note::
 
-    CakePHP will dynamically create a model object for you, if it
-    cannot find a corresponding file in /app/Model. This also means,
+    CakePHP will dynamically create a model object for you if it
+    cannot find a corresponding file in /app/Model. This also means
     that if you accidentally name your file wrong (i.e. post.php or
-    posts.php) CakePHP will not recognize any of your settings and will
+    posts.php), CakePHP will not recognize any of your settings and will
     use the defaults instead.
 
 For more on models, such as table prefixes, callbacks, and
@@ -46,7 +44,6 @@ post-related work done. We'll place this new controller in a file
 called ``PostsController.php`` inside the ``/app/Controller``
 directory. Here's what the basic controller should look like::
 
-    <?php
     class PostsController extends AppController {
         public $helpers = array('Html', 'Form');
     }
@@ -55,11 +52,8 @@ Now, lets add an action to our controller. Actions often represent
 a single function or interface in an application. For example, when
 users request www.example.com/posts/index (which is also the same
 as www.example.com/posts/), they might expect to see a listing of
-posts. The code for that action would look something like this:
+posts. The code for that action would look something like this::
 
-::
-
-    <?php
     class PostsController extends AppController {
         public $helpers = array('Html', 'Form');
 
@@ -89,8 +83,8 @@ the ``find('all')`` method of the Post model. Our Post model is
 automatically available at ``$this->Post`` because we've followed
 Cake's naming conventions.
 
-To learn more about Cake's controllers, check out
- :doc:`/controllers` chapter.
+To learn more about Cake's controllers, check out the
+:doc:`/controllers` chapter.
 
 Creating Post Views
 ===================
@@ -109,12 +103,10 @@ the default.
 
 Remember in the last section how we assigned the 'posts' variable
 to the view using the ``set()`` method? That would hand down data
-to the view that would look something like this:
-
-::
+to the view that would look something like this::
 
     // print_r($posts) output:
-    
+
     Array
     (
         [0] => Array
@@ -155,10 +147,12 @@ to the view that would look something like this:
 Cake's view files are stored in ``/app/View`` inside a folder
 named after the controller they correspond to (we'll have to create
 a folder named 'Posts' in this case). To format this post data in a
-nice table, our view code might look something like this::
+nice table, our view code might look something like this
+
+.. code-block:: php
 
     <!-- File: /app/View/Posts/index.ctp -->
-    
+
     <h1>Blog posts</h1>
     <table>
         <tr>
@@ -166,20 +160,20 @@ nice table, our view code might look something like this::
             <th>Title</th>
             <th>Created</th>
         </tr>
-    
+
         <!-- Here is where we loop through our $posts array, printing out post info -->
-    
+
         <?php foreach ($posts as $post): ?>
         <tr>
             <td><?php echo $post['Post']['id']; ?></td>
             <td>
-                <?php echo $this->Html->link($post['Post']['title'], 
+                <?php echo $this->Html->link($post['Post']['title'],
     array('controller' => 'posts', 'action' => 'view', $post['Post']['id'])); ?>
             </td>
             <td><?php echo $post['Post']['created']; ?></td>
         </tr>
         <?php endforeach; ?>
-    
+        <?php unset($post); ?>
     </table>
 
 Hopefully this should look somewhat simple.
@@ -212,7 +206,6 @@ gone wrong, or you actually did define it already, in which case
 you are very sneaky. Otherwise, we'll create it in the
 PostsController now::
 
-    <?php
     class PostsController extends AppController {
         public $helpers = array('Html', 'Form');
 
@@ -221,32 +214,45 @@ PostsController now::
         }
 
         public function view($id = null) {
-            $this->Post->id = $id;
-            $this->set('post', $this->Post->read());
+            if (!$id) {
+                throw new NotFoundException(__('Invalid post'));
+            }
+
+            $post = $this->Post->findById($id);
+            if (!$post) {
+                throw new NotFoundException(__('Invalid post'));
+            }
+            $this->set('post', $post);
         }
     }
 
 The ``set()`` call should look familiar. Notice we're using
-``read()`` rather than ``find('all')`` because we only really want
+``findById()`` rather than ``find('all')`` because we only really want
 a single post's information.
 
 Notice that our view action takes a parameter: the ID of the post
 we'd like to see. This parameter is handed to the action through
-the requested URL. If a user requests /posts/view/3, then the value
+the requested URL. If a user requests ``/posts/view/3``, then the value
 '3' is passed as ``$id``.
 
-Now let's create the view for our new 'view' action and place it in
-``/app/View/Posts/view.ctp``.
+We also do a bit of error checking to ensure a user is actually
+accessing a record. If a user requests ``/posts/view``, we will throw a
+``NotFoundException`` and let the CakePHP ErrorHandler take over. We
+also perform a similar check to make sure the user has accessed a
+record that exists.
 
-::
+Now let's create the view for our new 'view' action and place it in
+``/app/View/Posts/view.ctp``
+
+.. code-block:: php
 
     <!-- File: /app/View/Posts/view.ctp -->
-    
-    <h1><?php echo h($post['Post']['title'])?></h1>
-    
-    <p><small>Created: <?php echo $post['Post']['created']?></small></p>
-    
-    <p><?php echo h($post['Post']['body'])?></p>
+
+    <h1><?php echo h($post['Post']['title']); ?></h1>
+
+    <p><small>Created: <?php echo $post['Post']['created']; ?></small></p>
+
+    <p><?php echo h($post['Post']['body']); ?></p>
 
 Verify that this is working by trying the links at ``/posts/index`` or
 manually requesting a post by accessing ``/posts/view/1``.
@@ -258,13 +264,10 @@ Reading from the database and showing us the posts is a great
 start, but let's allow for the adding of new posts.
 
 First, start by creating an ``add()`` action in the
-PostsController:
+PostsController::
 
-::
-
-    <?php
     class PostsController extends AppController {
-        public $helpers = array('Html', 'Form');
+        public $helpers = array('Html', 'Form', 'Session');
         public $components = array('Session');
 
         public function index() {
@@ -272,18 +275,25 @@ PostsController:
         }
 
         public function view($id) {
-            $this->Post->id = $id;
-            $this->set('post', $this->Post->read());
+            if (!$id) {
+                throw new NotFoundException(__('Invalid post'));
+            }
 
+            $post = $this->Post->findById($id);
+            if (!$post) {
+                throw new NotFoundException(__('Invalid post'));
+            }
+            $this->set('post', $post);
         }
 
         public function add() {
             if ($this->request->is('post')) {
+                $this->Post->create();
                 if ($this->Post->save($this->request->data)) {
-                    $this->Session->setFlash('Your post has been saved.');
+                    $this->Session->setFlash(__('Your post has been saved.'));
                     $this->redirect(array('action' => 'index'));
                 } else {
-                    $this->Session->setFlash('Unable to add your post.');
+                    $this->Session->setFlash(__('Unable to add your post.'));
                 }
             }
         }
@@ -295,13 +305,13 @@ PostsController:
     any controller where you will use it. If necessary, include it in
     your AppController.
 
-Here's what the ``add()`` action does: if HTTP method of the
+Here's what the ``add()`` action does: if the HTTP method of the
 request was POST, try to save the data using the Post model. If for some
 reason it doesn't save, just render the view. This gives us a
 chance to show the user validation errors or other warnings.
 
-Every CakePHP request includes a ``CakeRequest`` object which is accessible using 
-``$this->request``. The request object contains useful information regarding the 
+Every CakePHP request includes a ``CakeRequest`` object which is accessible using
+``$this->request``. The request object contains useful information regarding the
 request that was just received, and can be used to control the flow of your application.
 In this case, we use the :php:meth:`CakeRequest::is()` method to check that the request is a HTTP POST request.
 
@@ -318,8 +328,9 @@ message and clears the corresponding session variable. The
 controller's :php:meth:`Controller::redirect` function
 redirects to another URL. The param ``array('action' => 'index')``
 translates to URL /posts i.e the index action of posts controller.
-You can refer to :php:func:`Router::url()` function on the api to see 
-the formats in which you can specify a URL for various cake functions.
+You can refer to :php:func:`Router::url()` function on the
+`API <http://api20.cakephp.org>`_ to see the formats in which you can specify a
+URL for various Cake functions.
 
 Calling the ``save()`` method will check for validation errors and
 abort the save if any occur. We'll discuss how those errors are
@@ -336,10 +347,12 @@ To take advantage of the validation features, you'll need to use
 Cake's FormHelper in your views. The :php:class:`FormHelper` is available by
 default to all views at ``$this->Form``.
 
-Here's our add view::
+Here's our add view:
 
-    <!-- File: /app/View/Posts/add.ctp -->   
-        
+.. code-block:: php
+
+    <!-- File: /app/View/Posts/add.ctp -->
+
     <h1>Add Post</h1>
     <?php
     echo $this->Form->create('Post');
@@ -349,7 +362,9 @@ Here's our add view::
     ?>
 
 Here, we use the FormHelper to generate the opening tag for an HTML
-form. Here's the HTML that ``$this->Form->create()`` generates::
+form. Here's the HTML that ``$this->Form->create()`` generates:
+
+.. code-block:: html
 
     <form id="PostAddForm" method="post" action="/posts/add">
 
@@ -376,14 +391,16 @@ Now let's go back and update our ``/app/View/Posts/index.ctp``
 view to include a new "Add Post" link. Before the ``<table>``, add
 the following line::
 
-    <?php echo $this->Html->link('Add Post', array('controller' => 'posts', 'action' => 'add')); ?>
+    <?php echo $this->Html->link(
+        'Add Post',
+        array('controller' => 'posts', 'action' => 'add')
+    ); ?>
 
 You may be wondering: how do I tell CakePHP about my validation
 requirements? Validation rules are defined in the model. Let's look
 back at our Post model and make a few adjustments::
 
-    <?php
-    class Post extends AppModel {    
+    class Post extends AppModel {
         public $validate = array(
             'title' => array(
                 'rule' => 'notEmpty'
@@ -404,8 +421,8 @@ setup, check the :doc:`/models/data-validation`.
 
 Now that you have your validation rules in place, use the app to
 try to add a post with an empty title or body to see how it works.
-Since we've used the :php:meth:`FormHelper::input()` method of the 
-FormHelper to create our form elements, our validation error 
+Since we've used the :php:meth:`FormHelper::input()` method of the
+FormHelper to create our form elements, our validation error
 messages will be shown automatically.
 
 Editing Posts
@@ -416,36 +433,54 @@ should have picked up a pattern. Make the action, then the view.
 Here's what the ``edit()`` action of the PostsController would look
 like::
 
-    <?php
     public function edit($id = null) {
-        $this->Post->id = $id;
-        if ($this->request->is('get')) {
-            $this->request->data = $this->Post->read();
-        } else {
+        if (!$id) {
+            throw new NotFoundException(__('Invalid post'));
+        }
+
+        $post = $this->Post->findById($id);
+        if (!$post) {
+            throw new NotFoundException(__('Invalid post'));
+        }
+
+        if ($this->request->is('post') || $this->request->is('put')) {
+            $this->Post->id = $id;
             if ($this->Post->save($this->request->data)) {
-                $this->Session->setFlash('Your post has been updated.');
+                $this->Session->setFlash(__('Your post has been updated.'));
                 $this->redirect(array('action' => 'index'));
             } else {
-                $this->Session->setFlash('Unable to update your post.');
+                $this->Session->setFlash(__('Unable to update your post.'));
             }
+        }
+
+        if (!$this->request->data) {
+            $this->request->data = $post;
         }
     }
 
-This action first checks that the request is a GET request.  If it is, then
-we find the Post and hand it to the view.  If the user request is not a GET, it
-probably contains POST data.  We'll use the POST data to update our Post record 
-with, or kick back and show the user the validation errors.
+This action first ensures that the user has tried to access an existing record.
+If they haven't passed in a passed in an ``$id`` parameter, or the post does not
+exist, we throw a ``NotFoundException`` for the CakePHP ErrorHandler to take care of.
 
-The edit view might look something like this::
+Next the action checks that the request is a POST request.  If it is, then we
+use the POST data to update our Post record, or kick back and show the user
+validation errors.
+
+If there is no data set to ``$this->request->data``, we simply set it to the
+previously retrieved post.
+
+The edit view might look something like this:
+
+.. code-block:: php
 
     <!-- File: /app/View/Posts/edit.ctp -->
-        
+
     <h1>Edit Post</h1>
     <?php
-        echo $this->Form->create('Post', array('action' => 'edit'));
+        echo $this->Form->create('Post');
         echo $this->Form->input('title');
         echo $this->Form->input('body', array('rows' => '3'));
-        echo $this->Form->input('id', array('type' => 'hidden')); 
+        echo $this->Form->input('id', array('type' => 'hidden'));
         echo $this->Form->end('Save Post');
 
 This view outputs the edit form (with the values populated), along
@@ -457,7 +492,9 @@ present (look back at our add view), Cake will assume that you are
 inserting a new model when ``save()`` is called.
 
 You can now update your index view with links to edit specific
-posts::
+posts:
+
+.. code-block:: php
 
     <!-- File: /app/View/Posts/index.ctp  (edit links added) -->
 
@@ -477,10 +514,10 @@ posts::
         <tr>
             <td><?php echo $post['Post']['id']; ?></td>
             <td>
-                <?php echo $this->Html->link($post['Post']['title'], array('action' => 'view', $post['Post']['id']));?>
+                <?php echo $this->Html->link($post['Post']['title'], array('action' => 'view', $post['Post']['id'])); ?>
             </td>
             <td>
-                <?php echo $this->Html->link('Edit', array('action' => 'edit', $post['Post']['id']));?>
+                <?php echo $this->Html->link('Edit', array('action' => 'edit', $post['Post']['id'])); ?>
             </td>
             <td>
                 <?php echo $post['Post']['created']; ?>
@@ -496,13 +533,13 @@ Deleting Posts
 Next, let's make a way for users to delete posts. Start with a
 ``delete()`` action in the PostsController::
 
-    <?php
     public function delete($id) {
         if ($this->request->is('get')) {
             throw new MethodNotAllowedException();
         }
+
         if ($this->Post->delete($id)) {
-            $this->Session->setFlash('The post with id: ' . $id . ' has been deleted.');
+            $this->Session->setFlash(__('The post with id: %s has been deleted.', $id));
             $this->redirect(array('action' => 'index'));
         }
     }
@@ -511,49 +548,51 @@ This logic deletes the post specified by $id, and uses
 ``$this->Session->setFlash()`` to show the user a confirmation
 message after redirecting them on to ``/posts``.  If the user attempts to
 do a delete using a GET request, we throw an Exception.  Uncaught exceptions
-are captured by CakePHP's exception handler, and a nice error page is 
+are captured by CakePHP's exception handler, and a nice error page is
 displayed.  There are many built-in :doc:`/development/exceptions` that can
 be used to indicate the various HTTP errors your application might need
 to generate.
 
 Because we're just executing some logic and redirecting, this
 action has no view. You might want to update your index view with
-links that allow users to delete posts, however::
+links that allow users to delete posts, however:
+
+.. code-block:: php
 
     <!-- File: /app/View/Posts/index.ctp -->
-    
+
     <h1>Blog posts</h1>
     <p><?php echo $this->Html->link('Add Post', array('action' => 'add')); ?></p>
     <table>
         <tr>
             <th>Id</th>
             <th>Title</th>
-                    <th>Actions</th>
+            <th>Actions</th>
             <th>Created</th>
         </tr>
-    
+
     <!-- Here's where we loop through our $posts array, printing out post info -->
-    
+
         <?php foreach ($posts as $post): ?>
         <tr>
             <td><?php echo $post['Post']['id']; ?></td>
             <td>
-                <?php echo $this->Html->link($post['Post']['title'], array('action' => 'view', $post['Post']['id']));?>
+                <?php echo $this->Html->link($post['Post']['title'], array('action' => 'view', $post['Post']['id'])); ?>
             </td>
             <td>
                 <?php echo $this->Form->postLink(
-                    'Delete', 
+                    'Delete',
                     array('action' => 'delete', $post['Post']['id']),
-                    array('confirm' => 'Are you sure?')); 
+                    array('confirm' => 'Are you sure?'));
                 ?>
-                <?php echo $this->Html->link('Edit', array('action' => 'edit', $post['Post']['id']));?>
+                <?php echo $this->Html->link('Edit', array('action' => 'edit', $post['Post']['id'])); ?>
             </td>
             <td>
                 <?php echo $post['Post']['created']; ?>
             </td>
         </tr>
         <?php endforeach; ?>
-    
+
     </table>
 
 Using :php:meth:`~FormHelper::postLink()` will create a link that uses
@@ -588,14 +627,12 @@ Cake's routing is found in ``/app/Config/routes.php``. You'll want
 to comment out or remove the line that defines the default root
 route. It looks like this::
 
-    <?php
     Router::connect('/', array('controller' => 'pages', 'action' => 'display', 'home'));
 
 This line connects the URL '/' with the default CakePHP home page.
 We want it to connect with our own controller, so replace that line
 with this one::
 
-    <?php
     Router::connect('/', array('controller' => 'posts', 'action' => 'index'));
 
 This should connect users requesting '/' to the index() action of
@@ -623,7 +660,7 @@ for building more feature-rich applications.
 
 Now that you've created a basic Cake application you're ready for
 the real thing. Start your own project, read the rest of the
-`Manual </>`_ and `API <http://api20.cakephp.org>`_.
+:doc:`Cookbook </index>` and `API <http://api20.cakephp.org>`_.
 
 If you need help, come see us in #cakephp. Welcome to CakePHP!
 

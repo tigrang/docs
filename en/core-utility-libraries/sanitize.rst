@@ -18,7 +18,6 @@ output/display.
 All you need to do is include the Sanitize core library (e.g.
 before the controller class definition)::
 
-    <?php
     App::uses('Sanitize', 'Utility');
     
     class MyController extends AppController {
@@ -64,7 +63,6 @@ Once you've done that, you can make calls to Sanitize statically.
 
     Usage of clean() with options looks something like the following::
 
-        <?php
         $this->data = Sanitize::clean($this->data, array('encode' => false));
 
 
@@ -89,28 +87,26 @@ Once you've done that, you can make calls to Sanitize statically.
     pages. If the $remove option is set to true, HTML content detected
     is removed rather than rendered as HTML entities::
 
-        <?php
         $badString = '<font size="99" color="#FF0000">HEY</font><script>...</script>';
         echo Sanitize::html($badString);
         // output: &lt;font size=&quot;99&quot; color=&quot;#FF0000&quot;&gt;HEY&lt;/font&gt;&lt;script&gt;...&lt;/script&gt;
         echo Sanitize::html($badString, array('remove' => true));
         // output: HEY...
 
-    Escaping is often a better strategy than stripping, as it has less room
-    for error, and isn't vulnerable to new types of attacks, the stripping 
-    function does not know about.
+    Escaping HTML content using :php:func:`h` is often a better strategy than
+    sanitization, as it has less room for error, and isn't vulnerable to new
+    types of attacks, the stripping function does not know about.
 
 .. php:staticmethod:: Sanitize::paranoid($string, $allowedChars)
 
     :param string $string: Data to clean.
-    :param string $allowedChars: An array of non alpha numeric characters allowed.
+    :param array $allowedChars: An array of non alpha numeric characters allowed.
 
     This function strips anything out of the target $string that is not
     a plain-jane alphanumeric character. The function can be made to
     overlook certain characters by passing them in $allowedChars
     array::
 
-        <?php
         $badString = ";:<script><html><   // >@@#";
         echo Sanitize::paranoid($badString);
         // output: scripthtml

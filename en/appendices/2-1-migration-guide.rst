@@ -12,25 +12,21 @@ removed from the CakePHP core.  If you do not already have these classes, you
 can use the following while upgrading::
 
     // app/View/Helper/AppHelper.php
-    <?php
     App::uses('Helper', 'View');
     class AppHelper extends Helper {
     }
 
     // app/Model/AppModel.php
-    <?php
     App::uses('Model', 'Model');
     class AppModel extends Model {
     }
 
     // app/Controller/AppController.php
-    <?php
     App::uses('Controller', 'Controller');
     class AppController extends Controller {
     }
 
     // app/Console/Command/AppShell.php
-    <?php
     App::uses('Shell', 'Console');
     class AppShell extends Shell {
     }
@@ -70,7 +66,7 @@ CakeSession
 -----------
 
 .. versionchanged:: 2.1.1
-    CakeSession no longer sets the P3P header, as this is the responsibity of your application.
+    CakeSession no longer sets the P3P header, as this is the responsibility of your application.
     More info see ticket `#2515 <http://cakephp.lighthouseapp.com/projects/42648/tickets/2515-cakephp-20-session-p3p-header-doesnt-work-in-an-iframe>`_ in lighthouse
 
 Behaviors
@@ -144,9 +140,9 @@ Test Shell
 A new TestShell has been added. It reduces the typing required to run unit
 tests, and offers a file path based UI::
 
-    # Run the post model tests
-    Console/cake test app/Model/Post.php
-    Console/cake test app/Controller/PostsController.php
+    ./Console/cake test app Model/Post
+    ./Console/cake test app Controller/PostsController
+    ./Console/cake test Plugin View/Helper/MyHelper
 
 The old testsuite shell and its syntax are still available.
 
@@ -265,7 +261,6 @@ View
   instead.
 - ``$scripts_for_layout`` is deprecated.  Use the following instead::
 
-        <?php
         echo $this->fetch('meta');
         echo $this->fetch('css');
         echo $this->fetch('script');

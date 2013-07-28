@@ -28,7 +28,6 @@ such as debugging and translating content.
     ``sprintf()``.  You can supply additional arguments to replace
     placeholders in your string::
 
-        <?php
         __('You have %s unread messages', $number);
 
     .. note::
@@ -124,7 +123,7 @@ such as debugging and translating content.
 .. php:function:: debug(mixed $var, boolean $showHtml = null, $showFrom = true)
 
     If the application's DEBUG level is non-zero, $var is printed out.
-    If ``$showHTML`` is trueor left null, the data is rendered to be
+    If ``$showHTML`` is true or left as null, the data is rendered to be
     browser-friendly.
     If $showFrom is not set to false, the debug output will start with the line from
     which it was called
@@ -224,6 +223,9 @@ Most of the following constants refer to paths in your application.
 .. php:const:: FULL_BASE_URL
 
     Full url prefix. Such as ``https://example.com``
+    
+    .. deprecated:: 2.4
+        This constant is deprecated, you should use :php:meth:`Router::baseUrl()` instead.
 
 .. php:const:: IMAGES
 

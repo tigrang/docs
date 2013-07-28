@@ -1,6 +1,5 @@
-#############
 Blog Tutorial
-#############
+*************
 
 Welcome to CakePHP. You're probably checking out this tutorial
 because you want to learn more about how CakePHP works. It's our
@@ -14,19 +13,19 @@ list, add, edit, and delete blog posts.
 
 Here's what you'll need:
 
-
 #. A running web server. We're going to assume you're using Apache,
    though the instructions for using other servers should be very
    similar. We might have to play a little with the server
    configuration, but most folks can get Cake up and running without
-   any configuration at all.
+   any configuration at all. Make sure you have PHP 5.2.8 or greater.
 #. A database server. We're going to be using MySQL server in this
    tutorial. You'll need to know enough about SQL in order to create a
-   database: Cake will be taking the reins from there.
+   database: Cake will be taking the reins from there.  Since we're using MySQL,
+   also make sure that you have ``pdo_mysql`` enabled in PHP.
 #. Basic PHP knowledge. The more object-oriented programming you've
    done, the better: but fear not if you're a procedural fan.
 #. Finally, you'll need a basic knowledge of the MVC programming
-   pattern. A quick overview can be found in :doc:`/cakephp-overview/understanding-model-view-controller`. 
+   pattern. A quick overview can be found in :doc:`/cakephp-overview/understanding-model-view-controller`.
    Don't worry, it's only a half a page or so.
 
 Let's get started!
@@ -37,7 +36,7 @@ Getting Cake
 First, let's get a copy of fresh Cake code.
 
 To get a fresh download, visit the CakePHP project on GitHub:
-`http://github.com/cakephp/cakephp/downloads <http://github.com/cakephp/cakephp/downloads>`_
+`https://github.com/cakephp/cakephp/tags <https://github.com/cakephp/cakephp/tags>`_
 and download the latest release of 2.0
 
 You can also clone the repository using
@@ -46,9 +45,7 @@ You can also clone the repository using
 
 Regardless of how you downloaded it, place the code inside of your
 DocumentRoot. Once finished, your directory setup should look
-something like the following:
-
-::
+something like the following::
 
     /path_to_document_root
         /app
@@ -66,14 +63,12 @@ structure works: check out
 Creating the Blog Database
 ==========================
 
-Next, lets set up the underlying database for our blog. if you
+Next, let's set up the underlying database for our blog. If you
 haven't already done so, create an empty database for use in this
 tutorial, with a name of your choice. Right now, we'll just create
 a single table to store our posts. We'll also throw in a few posts
 right now to use for testing purposes. Execute the following SQL
-statements into your database:
-
-::
+statements into your database::
 
     /* First, create our posts table: */
     CREATE TABLE posts (
@@ -119,11 +114,8 @@ the same directory, but name it ``database.php``.
 The config file should be pretty straightforward: just replace the
 values in the ``$default`` array with those that apply to your
 setup. A sample completed configuration array might look something
-like the following:
+like the following::
 
-::
-
-    <?php
     public $default = array(
         'datasource' => 'Database/Mysql',
         'persistent' => false,
@@ -142,6 +134,11 @@ able to open your browser and see the Cake welcome page. It should
 also tell you that your database connection file was found, and
 that Cake can successfully connect to the database.
 
+.. note::
+
+    Remember that you'll need to have PDO, and pdo_mysql enabled in 
+    your php.ini.
+
 Optional Configuration
 ======================
 
@@ -155,11 +152,8 @@ write access to its ``tmp`` folder.
 The security salt is used for generating hashes. Change the default
 salt value by editing ``/app/Config/core.php`` line 187. It doesn't
 much matter what the new value is, as long as it's not easily
-guessed.
+guessed::
 
-::
-
-    <?php
     /**
      * A random string used in security hashing methods.
      */
@@ -168,11 +162,8 @@ guessed.
 The cipher seed is used for encrypt/decrypt strings. Change the
 default seed value by editing ``/app/Config/core.php`` line 192. It
 doesn't much matter what the new value is, as long as it's not
-easily guessed.
+easily guessed::
 
-::
-
-    <?php
     /**
      * A random numeric string (digits only) used to encrypt/decrypt strings.
      */
@@ -192,65 +183,18 @@ informed by a warning while not in production mode.
 A Note on mod\_rewrite
 ======================
 
-Occasionally a new user will run in to mod\_rewrite issues, so I'll
-mention them marginally here. If the CakePHP welcome page looks a
-little funny (no images or css styles), it probably means
-mod\_rewrite isn't functioning on your system. Here are some tips
-to help get you up and running:
+Occasionally a new user will run into mod\_rewrite issues. For example
+if the CakePHP welcome page looks a little funny (no images or css styles),
+it probably means mod\_rewrite isn't functioning on your system. Please refer
+to one of the sections below about url rewriting for your webserver to get
+you up and running:
+
+.. toctree::
+
+    /installation/url-rewriting
 
 
-#. Make sure that an .htaccess override is allowed: in your
-   httpd.conf, you should have a section that defines a section for
-   each Directory on your server. Make sure the ``AllowOverride`` is
-   set to ``All`` for the correct Directory. For security and
-   performance reasons, do *not* set ``AllowOverride`` to ``All`` in
-   ``<Directory />``. Instead, look for the ``<Directory>`` block that
-   refers to your actual website directory.
-
-#. Make sure you are editing the correct httpd.conf rather than a
-   user- or site-specific httpd.conf.
-
-#. For some reason or another, you might have obtained a copy of
-   CakePHP without the needed .htaccess files. This sometimes happens
-   because some operating systems treat files that start with '.' as
-   hidden, and don't copy them. Make sure your copy of CakePHP is from
-   the downloads section of the site or our git repository.
-
-#. Make sure Apache is loading up mod\_rewrite correctly! You
-   should see something like::
-
-       LoadModule rewrite_module             libexec/httpd/mod_rewrite.so
-
-   or (for Apache 1.3)::
-
-       AddModule             mod_rewrite.c
-   
-   in your httpd.conf.
-
-
-If you don't want or can't get mod\_rewrite (or some other
-compatible module) up and running on your server, you'll need to
-use Cake's built in pretty URLs. In ``/app/Config/core.php``,
-uncomment the line that looks like::
-
-    Configure::write('App.baseUrl', env('SCRIPT_NAME'));
-
-Also remove these .htaccess files::
-
-    /.htaccess
-    /app/.htaccess
-    /app/webroot/.htaccess
-            
-
-This will make your URLs look like
-www.example.com/index.php/controllername/actionname/param rather
-than www.example.com/controllername/actionname/param.
-
-If you are installing CakePHP on a webserver besides Apache, you
-can find instructions for getting URL rewriting working for other
-servers under the :doc:`/installation/advanced-installation` section.
-
-Continue to :doc:`/tutorials-and-examples/blog/part-two` to start building your first CakePHP application.
+Now continue to :doc:`/tutorials-and-examples/blog/part-two` to start building your first CakePHP application.
 
 
 .. meta::

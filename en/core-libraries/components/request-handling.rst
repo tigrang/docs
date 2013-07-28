@@ -22,7 +22,6 @@ parsed into an array which is assigned to ``$this->request->data``,
 and can then be saved as model data. In order to make use of
 RequestHandler it must be included in your $components array::
 
-    <?php
     class WidgetController extends AppController {
 
         public $components = array('RequestHandler');
@@ -44,12 +43,11 @@ the client and its request.
     types is accepted by the client. If null returns an array of the
     content-types that the client accepts. For example::
 
-        <?php
         class PostsController extends AppController {
 
             public $components = array('RequestHandler');
 
-            public function beforeFilter () {
+            public function beforeFilter() {
                 if ($this->RequestHandler->accepts('html')) {
                     // Execute code only if client accepts an HTML (text/html) response
                 } elseif ($this->RequestHandler->accepts('xml')) {
@@ -82,15 +80,20 @@ Other request 'type' detection methods include:
     if the client accepts WAP content. The supported Mobile User Agent
     strings are:
 
-    -  iPhone
-    -  MIDP
+    -  Android
     -  AvantGo
     -  BlackBerry
-    -  J2ME
-    -  Opera Mini
     -  DoCoMo
+    -  Fennec
+    -  iPad
+    -  iPhone
+    -  iPod
+    -  J2ME
+    -  MIDP
     -  NetFront
     -  Nokia
+    -  Opera Mini
+    -  Opera Mobi
     -  PalmOS
     -  PalmSource
     -  portalmmm
@@ -99,7 +102,9 @@ Other request 'type' detection methods include:
     -  SonyEricsson
     -  Symbian
     -  UP.Browser
+    -  webOS
     -  Windows CE
+    -  Windows Phone OS
     -  Xiino
 
 .. php:method:: isWap()
@@ -113,7 +118,6 @@ want to disable browser caching, and change the debug level.
 However, you want to allow caching for non-ajax requests. The
 following would accomplish that::
 
-        <?php
         if ($this->request->is('ajax')) {
             $this->disableCache();
         }
@@ -143,7 +147,6 @@ Automatically decoding request data
     an array of data contained in the request input.  For example adding a CSV
     handler in your controllers' beforeFilter could look like::
 
-        <?php
         $parser = function ($data) {
             $rows = str_getcsv($data, "\n");
             foreach ($rows as &$row) {
@@ -158,7 +161,6 @@ Automatically decoding request data
     also pass additional arguments to the callback, this is useful for callbacks
     like ``json_decode``::
 
-        <?php
         $this->RequestHandler->addInputType('json', array('json_decode', true));
 
     The above will make ``$this->request->data`` an array of the JSON input data,
@@ -173,9 +175,9 @@ application.
 
 .. php:method:: setContent($name, $type = null)
 
-    -  $name string - The name or file extension of the Content-type
+    :param string $name: The name or file extension of the Content-type
        ie. html, css, json, xml.
-    -  $type mixed - The mime-type(s) that the Content-type maps to.
+    :param mixed $type: The mime-type(s) that the Content-type maps to.
 
     setContent adds/sets the Content-types for the given name. Allows
     content-types to be mapped to friendly aliases and or extensions.
@@ -275,10 +277,35 @@ bandwidth. The response status code is then set to `304 Not Modified`.
 You can opt-out this automatic checking by setting the ``checkHttpCache``
 setting to false::
 
-    <?php
-    public components = array(
+    public $components = array(
         'RequestHandler' => array(
             'checkHttpCache' => false
+    ));
+
+Using custom ViewClasses
+========================
+
+.. versionadded:: 2.3
+
+When using JsonView/XmlView you might want to override the default serialization
+with a custom View class, or add View classes for other types.
+
+You can map existing and new types to your custom classes.
+
+.. php:method:: viewClassMap($type, $viewClass)
+
+    :param string|array $type: The type string or map array with format ``array('json' => 'MyJson')``
+    :param string $viewClass: The viewClass to be used for the type without `View` appended
+
+You can also set this automatically by using the ``viewClassMap`` setting::
+
+    public $components = array(
+        'RequestHandler' => array(
+            'viewClassMap' => array(
+                'json' => 'ApiKit.MyJson',
+                'xml' => 'ApiKit.MyXml',
+                'csv' => 'ApiKit.Csv'
+            )
     ));
 
 .. meta::

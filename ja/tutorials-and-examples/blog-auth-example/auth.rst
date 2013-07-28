@@ -23,10 +23,8 @@
 
 次のステップはユーザーのデータを探索(*finding*)、保存(*saving*)、検証(*validating*)する責任を持つ、ユーザーモデルを作成することです::
 
-    <?php
     // app/Model/User.php
     class User extends AppModel {
-        public $name = 'User';
         public $validate = array(
             'username' => array(
                 'required' => array(
@@ -53,13 +51,12 @@
 UsersControllerもまた作成しましょう。
 以下のコードは基本的なCakePHPにバンドルされたコード生成ユーティリティで `焼き上がった` (*baked*) UsersControllerクラスに該当します::
 
-    <?php
     // app/Controller/UsersController.php
     class UsersController extends AppController {
 
         public function beforeFilter() {
             parent::beforeFilter();
-            $this->Auth->allow('add', 'logout');
+            $this->Auth->allow('add');
         }
 
         public function index() {
@@ -120,24 +117,26 @@ UsersControllerもまた作成しましょう。
             $this->Session->setFlash(__('User was not deleted'));
             $this->redirect(array('action' => 'index'));
         }
+    }
 
 以前ビューを作成した方法と同様に、またはコード生成ツールを用いて、ビューを実装します。
-このチュートリアルの目的に沿って、add.ctpだけを示します::
+このチュートリアルの目的に沿って、add.ctpだけを示します:
+
+.. code-block:: php
 
     <!-- app/View/Users/add.ctp -->
     <div class="users form">
-    <?php echo $this->Form->create('User');?>
+    <?php echo $this->Form->create('User'); ?>
         <fieldset>
             <legend><?php echo __('Add User'); ?></legend>
-        <?php
-            echo $this->Form->input('username');
+            <?php echo $this->Form->input('username');
             echo $this->Form->input('password');
             echo $this->Form->input('role', array(
                 'options' => array('admin' => 'Admin', 'author' => 'Author')
             ));
         ?>
         </fieldset>
-    <?php echo $this->Form->end(__('Submit'));?>
+    <?php echo $this->Form->end(__('Submit')); ?>
     </div>
 
 認証(ログインとログアウト)
@@ -150,7 +149,6 @@ CakePHPではこれを :php:class:`AuthComponent` で処理します。
 このコンポーネントをアプリケーションに追加するには、
 ``app/Controller/AppController.php`` ファイルを開いて、以下の行を追加してください::
 
-    <?php
     // app/Controller/AppController.php
     class AppController extends Controller {
         //...
@@ -163,7 +161,7 @@ CakePHPではこれを :php:class:`AuthComponent` で処理します。
             )
         );
 
-        function beforeFilter() {
+        public function beforeFilter() {
             $this->Auth->allow('index', 'view');
         }
         //...
@@ -178,7 +176,6 @@ usersテーブルで規約を用いたので、設定することが多くあり
 さて、新しいユーザーを登録すること、usernameとpasswordを保存すること、更に重要な平文(*plain text*)でデータベースに保存されないようにパスワードをハッシュ化にすることを可能にする必要があります。
 AuthComponentに認証されていないユーザーがusersのadd関数にアクセスすること、実装にログインとログアウトアクションを伝えましょう::
 
-    <?php
     // app/Controller/UsersController.php
 
     public function beforeFilter() {
@@ -187,10 +184,12 @@ AuthComponentに認証されていないユーザーがusersのadd関数にア�
     }
 
     public function login() {
-        if ($this->Auth->login()) {
-            $this->redirect($this->Auth->redirect());
-        } else {
-            $this->Session->setFlash(__('Invalid username or password, try again'));
+        if ($this->request->is('post')) {
+            if ($this->Auth->login()) {
+                $this->redirect($this->Auth->redirect());
+            } else {
+                $this->Session->setFlash(__('Invalid username or password, try again'));
+            }
         }
     }
 
@@ -201,14 +200,13 @@ AuthComponentに認証されていないユーザーがusersのadd関数にア�
 パスワードのハッシュ化はまだされていません。
 ``app/Model/User.php`` のモデルファイルを開いて、以下のものを追加してください::
 
-    <?php
     // app/Model/User.php
     App::uses('AuthComponent', 'Controller/Component');
     class User extends AppModel {
 
     // ...
 
-    public function beforeSave() {
+    public function beforeSave($options = array()) {
         if (isset($this->data[$this->alias]['password'])) {
             $this->data[$this->alias]['password'] = AuthComponent::password($this->data[$this->alias]['password']);
         }
@@ -219,19 +217,20 @@ AuthComponentに認証されていないユーザーがusersのadd関数にア�
 
 これで、ユーザーが保存されるときは毎回、AuthComponentクラスが提供するデフォルトのハッシュ方法を用いてパスワードがハッシュ化されます。
 あとはログイン関数のビューテンプレートファイルだけです。
-以下のものを使ってください::
+以下のものを使ってください:
+
+.. code-block:: php
 
     <div class="users form">
     <?php echo $this->Session->flash('auth'); ?>
-    <?php echo $this->Form->create('User');?>
+    <?php echo $this->Form->create('User'); ?>
         <fieldset>
             <legend><?php echo __('Please enter your username and password'); ?></legend>
-        <?php
-            echo $this->Form->input('username');
+            <?php echo $this->Form->input('username');
             echo $this->Form->input('password');
         ?>
         </fieldset>
-    <?php echo $this->Form->end(__('Login'));?>
+    <?php echo $this->Form->end(__('Login')); ?>
     </div>
 
 ``/user/add`` URLにアクセスして新しいユーザーを登録し、 ``/users/login`` URLに行き、新しく作られた認証情報を用いてログインすることができるようになりました。
@@ -258,7 +257,6 @@ AuthComponentに認証されていないユーザーがusersのadd関数にア�
 
 また、作成された投稿に、現在ログインしているユーザーを参照として保存するために、PostsControllerでの小さな変更が必要です::
 
-    <?php
     // app/Controller/PostsController.php
     public function add() {
         if ($this->request->is('post')) {
@@ -277,7 +275,6 @@ Authコンポーネントの ``users()`` 関数は現在ログインしている
 アプリケーションの基本的なルールは、普通のユーザー(authorロール)が許可されたアクションだけにアクセスできる一方、管理者ユーザーが全てのURLにアクセスできるということです。
 もう一度AppControllerクラスを開いてAuthの設定にちょっとばかりのオプションを追加しましょう::
 
-    <?php
     // app/Controller/AppController.php
 
     public $components = array(
@@ -291,9 +288,11 @@ Authコンポーネントの ``users()`` 関数は現在ログインしている
 
     public function isAuthorized($user) {
         if (isset($user['role']) && $user['role'] === 'admin') {
-            return true; // 管理者は全てのアクションにアクセスできる
+            return true;
         }
-        return false; // 残りはできない
+
+        // デフォルトは拒否
+        return false;
     }
 
 とても単純な承認機構を作成しました。
@@ -305,24 +304,23 @@ Authコンポーネントの ``users()`` 関数は現在ログインしている
 PostsControllerに追加しようとしているルールは投稿の作成を著者に許可すべきですが、著者が合っていない場合投稿の編集を防止する必要があります。
 ``PostsController.php`` のファイルを開き、以下の内容を追加してください::
 
-    <?php
     // app/Controller/PostsController.php
 
     public function isAuthorized($user) {
-        if (parent::isAuthorized($user)) {
+        // 登録済ユーザーは投稿できる
+        if ($this->action === 'add') {
             return true;
         }
 
-        if ($this->action === 'add') {
-           // All registered users can add posts
-            return true;
-        }
+        // 投稿のオーナーは編集や削除ができる
         if (in_array($this->action, array('edit', 'delete'))) {
             $postId = $this->request->params['pass'][0];
-            return $this->Post->isOwnedBy($postId, $user['id']);
+            if ($this->Post->isOwnedBy($postId, $user['id'])) {
+                return true;
+            }
         }
-        
-        return false;
+
+        return parent::isAuthorized($user);
     }
 
 今AppControllerの ``isAuthorized()`` 呼び出しを上書きし、内部で親クラスが既にユーザーを承認しているかをチェックしています。
@@ -332,7 +330,6 @@ PostsControllerに追加しようとしているルールは投稿の作成を�
 一般的に、できるだけ多くのロジックをモデルに移動することは良い習慣です。
 それではその関数を実装していきましょう::
 
-    <?php
     // app/Model/Post.php
 
     public function isOwnedBy($post, $user) {

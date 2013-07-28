@@ -54,20 +54,21 @@ Each time you want to work on a bug, feature or enhancement create a topic
 branch.
 
 The branch you create should be based on the version that your fix/enhancement
-is for.  For example if you are fixing a bug in ``2.0`` you would want to use
-the ``2.0`` branch as the base for your branch.  This makes merging your changes
-in later much simpler::
+is for.  For example if you are fixing a bug in ``2.3`` you would want to use
+the ``2.3`` branch as the base for your branch.  If your change is a bug fix
+for the current stable release, you should use the ``master`` branch. This
+makes merging your changes in later much simpler::
 
-    # fixing a bug on 2.0
+    # fixing a bug on 2.3
     git fetch upstream
-    git checkout -b ticket-1234 upstream/2.0
+    git checkout -b ticket-1234 upstream/2.3
 
 .. tip::
 
     Use a descriptive name for your branch, referencing the ticket or feature
     name is a good convention. e.g. ticket-1234, feature-awesome
 
-The above will create a local branch based on the upstream (CakePHP) 2.0 branch.
+The above will create a local branch based on the upstream (CakePHP) 2.3 branch.
 Work on your fix, and make as many commits as you need; but keep in mind the
 following:
 
@@ -75,17 +76,18 @@ following:
 * Add a test case to show the bug is fixed, or that the new feature works.
 * Keep your commits logical, and write good clear and concise commit messages.
 
+
 Submitting a pull request
 =========================
 
 Once your changes are done and you're ready for them to be merged into CakePHP,
 you'll want to update your branch::
 
-    git checkout 2.0
+    git checkout 2.3
     git fetch upstream
-    git merge upstream/2.0
+    git merge upstream/2.3
     git checkout <branch_name>
-    git rebase 2.0
+    git rebase 2.3
 
 This will fetch + merge in any changes that have happened in CakePHP since you
 started.  It will then rebase - or replay your changes on top of the current
@@ -101,16 +103,35 @@ fork::
 
     git push origin <branch-name>
 
-Once your branch is on github, you can discuss it on the 
+Once your branch is on github, you can discuss it on the
 `cakephp-core <http://groups.google.com/group/cakephp-core>`_ mailing list or
-submit a pull request on github.
+submit a pull request on github. 
+
+Choosing where your changes will be merged into
+-----------------------------------------------
+
+When making pull requests you should make sure you select the correct base
+branch, as you cannot edit it once the pull request is created.
+
+* If your change is a **bugfix** and doesn't introduce new functionality and only
+  corrects existing behavior that is present in the current release.  Then
+  choose **master** as your merge target.
+* If your change is a **new feature** or an addition to the framework, then you
+  should choose the branch with the next version number.  For example if the
+  current stable release is ``2.2.2``, the branch accepting new features will be
+  ``2.3``
+* If your change is a breaks existing functionality, or API's then you'll have
+  to choose then next major release.  For example, if the current release is
+  ``2.2.2`` then the next time existing behavior can be broken will be in
+  ``3.0`` so you should target that branch.
+
 
 .. note::
 
     Remember that all code you contribute to CakePHP will be licensed under the
-    MIT License, and the Cake Software Foundation will become the owner of any
-    contributed code and all contributed code is subject to the `Contributors
-    license agreement <http://cakefoundation.org/pages/cla>`_.
+    MIT License, and the `Cake Software Foundation <http://cakefoundation.org/pages/about>`_
+    will become the owner of any contributed code and all contributed code is
+    subject to the `Contributors license agreement <http://cakefoundation.org/pages/cla>`_.
 
 All bug fixes merged into a maintenance branch will also be merged into upcoming
 releases periodically by the core team.

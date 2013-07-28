@@ -47,7 +47,7 @@ para que se parezca a este:
  // /app/webroot/index.php (partial, comments removed) 
     
     if (!defined('ROOT')) {
-        define('ROOT', DS.'home'.DS.'me');
+        define('ROOT', DS . 'home' . DS . 'me');
     }
     
     if (!defined('APP_DIR')) {
@@ -55,7 +55,7 @@ para que se parezca a este:
     }
     
     if (!defined('CAKE_CORE_INCLUDE_PATH')) {
-        define('CAKE_CORE_INCLUDE_PATH', DS.'usr'.DS.'lib');
+        define('CAKE_CORE_INCLUDE_PATH', DS . 'usr' . DS . 'lib');
     }
 
 Recomendamos utilizar la constante ``DS`` en vez del caracter '/' para delimitar
@@ -144,7 +144,7 @@ En el directorio raíz *webroot* (será copiado allí por bake):
            RewriteEngine On
            RewriteCond %{REQUEST_FILENAME} !-d
            RewriteCond %{REQUEST_FILENAME} !-f
-           RewriteRule ^(.*)$ index.php/$1 [QSA,L]
+           RewriteRule ^(.*)$ index.php [QSA,L]
        </IfModule>
 
 Muchos de las empresas de hosting (GoDaddy, 1and1) ya tienen mod\_rewrite activo
@@ -172,7 +172,7 @@ de configuración sólo se aplique si mod\_rewrite está cargado):
            RewriteBase /path/to/cake/app
            RewriteCond %{REQUEST_FILENAME} !-d
            RewriteCond %{REQUEST_FILENAME} !-f
-           RewriteRule ^(.*)$ index.php/$1 [QSA,L]
+           RewriteRule ^(.*)$ index.php [QSA,L]
        </IfModule>
 
 Este cambio dependerá de tu configuración. Puede que debas realizar otros
@@ -302,21 +302,24 @@ nginx es un servidor web que está ganando mucha popularidad. Igual que Lighttpd
     server {
         listen   80;
         server_name example.com;
-
+    
+        # root directive should be global
+        root   /var/www/example.com/public/app/webroot/;
+        index  index.php;
+        
         access_log /var/www/example.com/log/access.log;
         error_log /var/www/example.com/log/error.log;
 
         location / {
-            root   /var/www/example.com/public/app/webroot/;
-            index  index.php index.html index.htm;
             try_files $uri $uri/ /index.php?$uri&$args;
         }
 
-        location ~ .*\.php$ {
-            include /etc/nginx/fcgi.conf;
-            fastcgi_pass    127.0.0.1:10005;
+        location ~ \.php$ {
+            include /etc/nginx/fastcgi_params;
+            try_files $uri =404;
+            fastcgi_pass    127.0.0.1:9000;
             fastcgi_index   index.php;
-            fastcgi_param SCRIPT_FILENAME /var/www/example.com/public/app/webroot$fastcgi_script_name;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         }
     }
 

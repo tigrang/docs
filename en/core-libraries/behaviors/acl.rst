@@ -12,7 +12,6 @@ your model. When adding it to the actsAs array you choose to make
 the related Acl entry an ARO or an ACO. The default is to create
 ACOs::
 
-    <?php
     class User extends AppModel {
         public $actsAs = array('Acl' => array('type' => 'requester'));
     }
@@ -20,7 +19,6 @@ ACOs::
 This would attach the Acl behavior in ARO mode. To join the ACL
 behavior in ACO mode use::
 
-    <?php
     class Post extends AppModel {
         public $actsAs = array('Acl' => array('type' => 'controlled'));
     }
@@ -28,15 +26,13 @@ behavior in ACO mode use::
 For User and Group models it is common to have both ACO and ARO nodes,
 to achieve this use::
 
-    <?php
     class User extends AppModel {
         public $actsAs = array('Acl' => array('type' => 'both'));
     }
 
 You can also attach the behavior on the fly like so::
 
-    <?php
-    $this->Post->Behaviors->attach('Acl', array('type' => 'controlled'));
+    $this->Post->Behaviors->load('Acl', array('type' => 'controlled'));
 
 .. versionchanged:: 2.1
     You can now safely attach AclBehavior to AppModel. Aco, Aro and AclNode
@@ -54,24 +50,21 @@ parentNode() method defined. This is used by the AclBehavior to
 determine parent->child relationships. A model's parentNode()
 method must return null or return a parent Model reference::
 
-    <?php
-    function parentNode() {
+    public function parentNode() {
         return null;
     }
 
 If you want to set an ACO or ARO node as the parent for your Model,
 parentNode() must return the alias of the ACO or ARO node::
 
-    <?php
-    function parentNode() {
+    public function parentNode() {
         return 'root_node';
     }
 
 A more complete example. Using an example User Model, where User
 belongsTo Group::
 
-    <?php
-    function parentNode() {
+    public function parentNode() {
         if (!$this->id && empty($this->data)) {
             return null;
         }
@@ -101,7 +94,6 @@ $model->node() to retrieve the associated Acl node.
 You can also retrieve the Acl Node for any row, by passing in a
 data array::
 
-    <?php
     $this->User->id = 1;
     $node = $this->User->node();
 
@@ -115,7 +107,6 @@ Will both return the same Acl Node information.
 If you had setup AclBehavior to create both ACO and ARO nodes, you need to
 specify which node type you want::
 
-    <?php
     $this->User->id = 1;
     $node = $this->User->node(null, 'Aro');
 

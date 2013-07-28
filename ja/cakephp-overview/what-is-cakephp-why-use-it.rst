@@ -23,7 +23,7 @@ CakePHPの使用で益を受ける幾つかの点をざっと挙げると次の�
 
 -  アクティブ、フレンドリーな `コミュニティ <http://cakephp.org/feeds>`_
 -  フレキシブルな `ライセンス <http://ja.wikipedia.org/wiki/MIT_License>`_
--  PHP5.2.6以上との互換性をもつ
+-  PHP5.2.8以上との互換性をもつ
 -  データベースとのやり取りのための、
    `CRUD <http://ja.wikipedia.org/wiki/CRUD>`_
    が統合済み
@@ -44,7 +44,7 @@ CakePHPの使用で益を受ける幾つかの点をざっと挙げると次の�
 -  柔軟な
    `ACL <http://ja.wikipedia.org/wiki/%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B9%E5%88%B6%E5%BE%A1%E3%83%AA%E3%82%B9%E3%83%88>`_
 -  データのサニタイズ
--  柔軟なF `キャッシュ <http://en.wikipedia.org/wiki/Web_cache>`_
+-  柔軟な `キャッシュ <http://en.wikipedia.org/wiki/Web_cache>`_
 -  ローカライゼーション
 -  どんなwebサイトのディレクトリ構造からでも動作。最小限の
    `Apache <http://httpd.apache.org/>`_ の設定、または設定なしで可能。

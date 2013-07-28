@@ -44,14 +44,14 @@ either download an archive copy (zip/tar.gz/tar.bz2) from the main
 website, or check out the code from the git repository.
 
 To download the latest major release of CakePHP. Visit the main
-website `http://www.cakephp.org <http://www.cakephp.org>`_ and
+website `http://cakephp.org <http://cakephp.org>`_ and
 follow the "Download Now" link.
 
 All current releases of CakePHP are hosted on
 `Github <http://github.com/cakephp/cakephp>`_. Github houses both CakePHP
 itself as well as many other plugins for CakePHP. The CakePHP
 releases are available at
-`Github downloads <http://github.com/cakephp/cakephp/downloads>`_.
+`Github tags <https://github.com/cakephp/cakephp/tags>`_.
 
 Alternatively you can get fresh off the press code, with all the
 bug-fixes and up to the minute enhancements.
@@ -100,21 +100,17 @@ the purposes of this example that your document root is set to
 Unpack the contents of the Cake archive into ``/var/www/html``. You now
 have a folder in your document root named after the release you've
 downloaded (e.g. cake\_2.0.0). Rename this folder to cake\_2\_0.
-Your development setup will look like this on the file system:
+Your development setup will look like this on the file system::
 
-
--  /var/www/html
-
-  -  /cake\_2\_0
-
-     -  /app
-     -  /lib
-     -  /vendors
-     -  /plugins
-     -  /.htaccess
-     -  /index.php
-     -  /README
-
+    /var/www/html/
+        cake_2_0/
+            app/
+            lib/
+            plugins/
+            vendors/
+            .htaccess
+            index.php
+            README
 
 If your web server is configured correctly, you should now find
 your Cake application accessible at
@@ -123,10 +119,10 @@ http://www.example.com/cake\_2\_0/.
 Using one CakePHP checkout for multiple applications
 ----------------------------------------------------
 
-If you are developing a number of applications it often makes sense
-to have the share the same CakePHP core checkout. There are a few ways you can
+If you are developing a number of applications, it often makes sense to have
+them share the same CakePHP core checkout. There are a few ways in which you can
 accomplish this.  Often the easiest is to use PHP's ``include_path``. To start
-off, clone CakePHP into a directory.  For this example we'll use
+off, clone CakePHP into a directory.  For this example, we'll use
 ``~/projects``::
 
     git clone git://github.com/cakephp/cakephp.git ~/projects/cakephp
@@ -146,9 +142,9 @@ After restarting your webserver, you should see the changes reflected in
 
 .. note::
 
-    If you are on windows separate include paths with ; instead of :
+    If you are on windows, separate include paths with ; instead of :
 
-Once you have setup your ``include_path`` your applications should be able to
+Having finished setting up your ``include_path`` your applications should be able to
 find CakePHP automatically.
 
 Production
@@ -164,22 +160,18 @@ rights to change the ``DocumentRoot`` on Apache webservers.
 Unpack the contents of the Cake archive into a directory of your
 choosing. For the purposes of this example, we assume you choose to
 install Cake into /cake\_install. Your production setup will look
-like this on the filesystem:
+like this on the filesystem::
 
-
--  /cake\_install/
-   
-   -  /app
-      
-      -  /webroot (this directory is set as the ``DocumentRoot``
-         directive)
-
-   -  /lib
-   -  /vendors
-   -  /.htaccess
-   -  /index.php
-   -  /README
-
+    /cake_install/
+        app/
+            webroot/ (this directory is set as the ``DocumentRoot``
+             directive)
+        lib/
+        plugins/
+        vendors/
+        .htaccess
+        index.php
+        README
 
 Developers using Apache should set the ``DocumentRoot`` directive
 for the domain to::
@@ -189,12 +181,13 @@ for the domain to::
 If your web server is configured correctly, you should now find
 your Cake application accessible at http://www.example.com.
 
-Advanced Installation and server specific configuration
-=======================================================
+Advanced Installation and URL Rewriting
+=======================================
 
 .. toctree::
 
-   installation/advanced-installation
+    installation/advanced-installation
+    installation/url-rewriting
 
 Fire It Up
 ==========
@@ -211,7 +204,6 @@ application </getting-started>`.
 Not working? If you're getting timezone related error from PHP
 uncomment one line in ``app/Config/core.php``::
 
-   <?php
    /**
     * Uncomment this line and correct your server timezone to fix 
     * any date & time related errors.

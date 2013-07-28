@@ -1,4 +1,3 @@
-/* @override http://localhost/cake_docs/build/html/en/_static/cake.css */
 /**
  * Generic CakePHP 2.x design features.
  *
@@ -74,12 +73,14 @@ h5, h6 {
 a {
 	color: #417282;
 }
+a:focus,
 a:hover {
 	color: #003D4C;
 	text-decoration: underline;
 }
 
 /* General button */
+.offline-download a,
 .button {
 	font-family: MuseoSlab500, Helvetica, Arial;
 	font-weight: normal;
@@ -87,7 +88,7 @@ a:hover {
 	-webkit-text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.30);
 	-moz-text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.30);
 	-o-text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.30);
-	text-shadow: 0px -1px 0px rgba(0, 0, 0, 0.30);
+	text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.30);
 	
 	border: 1px solid #a61e2b;
 	-webkit-border-radius: 3px;
@@ -95,6 +96,8 @@ a:hover {
 	-o-border-radius: 3px;
 	border-radius: 3px;
 }
+.offline-download a:focus,
+.offline-download a:hover,
 .button:hover,
 .button:focus {
 	text-decoration: none;
@@ -102,6 +105,7 @@ a:hover {
 	-webkit-box-shadow: 0 2px 2px rgba(0, 0, 0, 0.25);
 	box-shadow: 0 2px 2px rgba(0, 0, 0, 0.25);
 }
+.offline-download a:active,
 .button:active {
 	outline: 0;
 	-moz-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -118,12 +122,14 @@ a:hover {
 	background-image: linear-gradient(top, #b2cccd, #a1bebf);
 	border-color: #698b8c;
 }
+.button.pale:focus,
 .button.pale:hover {
 	background: #aac5c6;
 	border-color: #507273;
 }
 
 /* Red buttons */
+.offline-download a,
 .button.red {
 	background: #C92434;
 
@@ -133,6 +139,9 @@ a:hover {
 	background-image: linear-gradient(top, #e01b2f, #c92434);
 
 }
+.offline-download a:focus,
+.button.red:focus,
+.offline-download a:hover,
 .button.red:hover {
 	background: #d62738;
 	border-color: #8c1925;
@@ -179,6 +188,25 @@ ul {
 }
 ul ul {
 	margin: 9px 0 9px 30px;
+}
+
+/* def list */
+dl.docutils {
+	margin: 2em 0;
+	padding: 0;
+}
+.docutils dt {
+	font-weight: bold;
+	font-size: 14px;
+	font-size: 1.4rem;
+	margin-bottom: 0.5em;
+}
+.docutils dd {
+	border-left: 2px solid #ccc;
+	margin: 0 0 1em 1em;
+	padding: 0 0 .5em .5em;
+	font-size: 14px;
+	font-size: 1.4rem;
 }
 
 /* tilted header */
@@ -232,6 +260,42 @@ ul ul {
 	-webkit-border-radius: 0;
 	-moz-border-radius: 0;
 	border-radius: 0;
+}
+
+/* promo spot on home page */
+.offline-download {
+	padding: 20px 20px 2px 215px;
+	background: #fff url(./interact.png) 10px 10px no-repeat;
+	border: 2px solid #417282;
+	-webkit-box-shadow: 0 0px 5px rgba(0,0,0,0.15);
+	-moz-box-shadow: 0 0px 5px rgba(0,0,0,0.25);
+	box-shadow: 0 0px 5px rgba(0,0,0,0.15);
+
+	-webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	border-radius: 4px;
+
+	margin: 0 0 20px 0;
+	min-height: 150px;
+}
+.offline-download ul {
+	margin: 0;
+}
+.offline-download li {
+	display: inline-block;
+	list-style: none;
+}
+.offline-download a {
+	display: inline-block;
+	text-align: center;
+	padding: 9px 34px 11px;
+	color: #fff;
+	text-decoration: none;
+	font-weight: bold;
+	line-height: 1;
+	font-family: "Helvetica Neue", "Helvetica", Arial, Verdana, sans-serif;
+	position: relative;
+	cursor: pointer;
 }
 
 #cakephp-global-navigation .nav-select {

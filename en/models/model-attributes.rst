@@ -24,7 +24,6 @@ Example usage:
 
 ::
 
-    <?php
     class Example extends AppModel {
         public $useDbConfig = 'alternate';
     }
@@ -40,14 +39,12 @@ table.
 
 Example usage::
 
-    <?php
     class Example extends AppModel {
         public $useTable = false; // This model does not use a database table
     }
 
 Alternatively::
 
-    <?php
     class Example extends AppModel {
         public $useTable = 'exmp'; // This model uses a database table 'exmp'
     }
@@ -63,7 +60,6 @@ the model.
 
 Example usage::
 
-    <?php
     class Example extends AppModel {
         public $tablePrefix = 'alternate_'; // will look for 'alternate_examples'
     }
@@ -79,11 +75,10 @@ setting CakePHP to use an existing database table.
 
 Example usage::
 
-    <?php
     class Example extends AppModel {
         public $primaryKey = 'example_id'; // example_id is the field name in the database
     }
-    
+
 
 .. _model-displayField:
 
@@ -97,7 +92,6 @@ scaffolding and in ``find('list')`` calls. The model will use
 
 For example, to use the ``username`` field::
 
-    <?php
     class User extends AppModel {
         public $displayField = 'username';
     }
@@ -111,8 +105,7 @@ recursive
 =========
 
 The recursive property defines how deep CakePHP should go to fetch
-associated model data via ``find()``, ``findAll()`` and ``read()``
-methods.
+associated model data via ``find()``, and ``read()`` methods.
 
 Imagine your application features Groups which belong to a domain
 and have many Users which in turn have many Articles. You can set
@@ -136,13 +129,23 @@ the default recursive level is 1.
     required foreign keys to the ``fields`` array manually. In the
     example above, this could mean adding ``domain_id``.
 
+.. tip::
+
+    The recommended recursive level for your application should be -1.
+    This avoids retrieving related data where that is unnecessary or even
+    unwanted. This is most likely the case for most of your find() calls.
+    Raise it only when needed or use Containable behavior.
+
+    You can achieve that by adding it to the AppModel::
+
+        public $recursive = -1;
+
 order
 =====
 
 The default ordering of data for any find operation. Possible
 values include::
 
-    <?php
     $order = "field"
     $order = "Model.field";
     $order = "Model.field asc";
@@ -172,14 +175,13 @@ Each field is described by:
 
 Example Usage::
 
-    <?php
     public $_schema = array(
         'first_name' => array(
-            'type' => 'string', 
+            'type' => 'string',
             'length' => 30
         ),
         'last_name' => array(
-            'type' => 'string', 
+            'type' => 'string',
             'length' => 30
         ),
         'email' => array(
@@ -213,7 +215,6 @@ other fields in a model but will not be saveable.
 
 Example usage for MySQL::
 
-    <?php
     public $virtualFields = array(
         'name' => "CONCAT(User.first_name, ' ', User.last_name)"
     );
@@ -230,13 +231,11 @@ usage, as well as limitations, see
 name
 ====
 
-As you saw earlier in this chapter, the name attribute is a
-compatibility feature for PHP4 users and is set to the same value
-as the model name.
+Name of the model. If you do not specify it in your model file it will
+be set to the class name by constructor.
 
 Example usage::
 
-    <?php
     class Example extends AppModel {
         public $name = 'Example';
     }

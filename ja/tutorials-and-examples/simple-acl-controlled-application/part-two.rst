@@ -7,16 +7,15 @@ ACOの作成を自動化するツール
 前述した通り、全てのコントローラとアクションをACLにあらかじめ入力し、構築しておく方法はありません。
 しかしながら、大きなアプリケーションにとてもたくさんのアクションがある場合、これを一々登録するというのは面倒です。
 
-この目的のために、 `AclExtras <https://github.com/markstory/acl_extras/tree/2.0>`_
+この目的のために、 `AclExtras <https://github.com/markstory/acl_extras/>`_
 という名のとても便利なプラグインが存在し、
-`Githubのダウンロードページ <https://github.com/markstory/acl_extras/zipball/2.0>`_ からダウンロードすることで、githubで入手することができます。
+`Githubのダウンロードページ <https://github.com/markstory/acl_extras/zipball/master>`_ からダウンロードすることで、githubで入手することができます。
 全てのACOを生成するための使用方法を簡単に説明しましょう。
 
 まず、プラグインのコピーを入手し、 `app/Plugin/AclExtras`
 に解凍、またはgitを用いて複製(*clone*)してください。
 次に、次に示すように `app/Config/boostrap.php` ファイル中でプラグインを有効にしてください::
 
-    <?php
     //app/Config/boostrap.php
     // ...
     CakePlugin::load('AclExtras');
@@ -46,7 +45,6 @@ AROに対してACOへのアクセスをシェルインターフェースを用�
 
 ``AclComponent`` を用いて許可を行うには、独自の方法の中で以下の文法のコード使います::
 
-    <?php
     $this->Acl->allow($aroAlias, $acoAlias);
 
 いくつかの「許可」「拒否」の指定を行ってみましょう。
@@ -55,11 +53,9 @@ http://localhost/cake/app/users/initdb)へ接続してください。
 ``SELECT * FROM aros_acos`` を実行すると、結果に 1 と -1 がたくさん含まれているはずです。
 パーミッションがセットできたことを確認したら、作成した関数を削除してください::
 
-    <?php
-
     public function beforeFilter() {
         parent::beforeFilter();
-        $this->Auth->allow('initDB'); //この行は終わったあと削除できます 
+        $this->Auth->allow('initDB'); //この行は終わったあと削除できます
     }
 
     public function initDB() {
@@ -102,7 +98,6 @@ ACLパーミッションからindexアクションやviewアクションをわ�
 さて、usersとgroupsコントローラから ``Auth->allowedActions`` への参照を取り外したいですね。
 それが終わったら、postsとwidgetsコントローラに次の行を追加しましょう::
 
-    <?php
     public function beforeFilter() {
         parent::beforeFilter();
         $this->Auth->allow('index', 'view');
@@ -111,7 +106,6 @@ ACLパーミッションからindexアクションやviewアクションをわ�
 これは先にusersとgroupsコントローラに設置した「オフスイッチ」を取り除き、postsとwidgetsコントローラのindexおよびviewアクションにパブリックなアクセスを与えています。
 ``AppController::beforeFilter()`` で以下を追加してください::
 
-    <?php
      $this->Auth->allow('display');
 
 これは「display」アクションをパブリックにし、PagesController::display()をパブリックに維持させます。
@@ -122,7 +116,9 @@ ACLパーミッションからindexアクションやviewアクションをわ�
 
 これでアプリケーションがアクセス制御下におかれましたので、パブリックでないページの表示に対するアクセスはログインページにリダイレクトされるようになりました。
 しかし、先にログインを行うまえに、それ用のビューを作成しなければなりません。
-もし ``app/View/Users/login.ctp`` をまだ作成していないなら、次のコードを設置してください::
+もし ``app/View/Users/login.ctp`` をまだ作成していないなら、次のコードを設置してください:
+
+.. code-block:: php
 
     <h2>Login</h2>
     <?php
@@ -134,7 +130,6 @@ ACLパーミッションからindexアクションやviewアクションをわ�
 
 ユーザーが既にログインしていたら、以下をUsersコントローラに追加してリダイレクトさせるようにしましょう::
 
-    <?php
     public function login() {
         if ($this->Session->read('Auth.User')) {
             $this->Session->setFlash('You are logged in!');
@@ -152,7 +147,6 @@ ACLパーミッションからindexアクションやviewアクションをわ�
 先に、ログアウトの関数を空のままにしておきましたが、これを埋めていきます。
 ``UsersController::logout()`` に次の行を追加してください::
 
-    <?php
     $this->Session->setFlash('Good-Bye');
     $this->redirect($this->Auth->logout());
 
@@ -168,5 +162,3 @@ Authのlogoutメソッドは基本的にAuthのSessionキーを削除し、リ�
 しかし、これらはユーザに対しても同じ時に行うことができます。
 パーミッションの設定は、グローバルに行ったり、コントローラ単位やアクション単位でも行えます。
 さらに、アプリケーションが拡大するにあたりACOテーブルを簡単に拡張し、再利用可能なコードのブロックを使うこともできます。
-
-

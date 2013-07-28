@@ -5,29 +5,23 @@ Contenu
    :maxdepth: 3
 
    index
-   basic-info
-   cakephp-overview
    installation
    getting-started
+   cakephp-overview
    controllers
    views
    models
    core-libraries
-   core-utility-libraries
    plugins
    console-and-shells
    development
    deployment
    tutorials-and-examples
+   contributing
    appendices
 
 .. todolist::
 
-
-Table des matières
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-* :doc:`/appendices/glossary`
+.. meta::
+    :title lang=fr: Contents
+    :keywords lang=fr: librairies du coeur,ref search,shells,déploiement,appendices,glossary,models

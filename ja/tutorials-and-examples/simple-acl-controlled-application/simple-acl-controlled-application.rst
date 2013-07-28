@@ -1,6 +1,12 @@
 ACLを制御するシンプルなアプリケーション
 #######################################
 
+.. note::
+
+    このチュートリアルは初心者向けではありません。もしCakePHPを始めたばかりなら、\
+    このチュートリアルに挑戦する前にまずはフレームワークの機能をひととおり体験しておくことをおすすめします。
+
+
 このチュートリアルでは :doc:`/core-libraries/components/authentication` と
 :doc:`/core-libraries/components/access-control-lists`
 を用いたシンプルなアプリケーションを作成します。
@@ -27,7 +33,7 @@ CakePHPのある程度の経験と、MVCの概念についての理解、
 
 まず、最新のCakePHPのコピーを取得しましょう。
 
-最新版をダウンロードするにはGithubのCakePHPプロジェクト(http://cakeforge.org/projects/cakephp/)にアクセスし、安定版のリリースをダウンロードしてください。
+最新版をダウンロードするにはGithubのCakePHPプロジェクト(https://github.com/cakephp/cakephp/tags)にアクセスし、安定版のリリースをダウンロードしてください。
 このチュートリアルで必要なバージョンは最新の2.0リリースです。
 
 `git <http://git-scm.com/>`_ を使ってレポジトリを複製(*clone*)することもできます。
@@ -100,7 +106,6 @@ bakeは必要なリレーションを全て行っているでしょうが、も�
 AuthとAclコンポーネントを追加する前に、多少の部品を加える必要があります。
 まずは ``UsersController`` にログインとログアウトのアクションを加えましょう::
 
-    <?php
     public function login() {
         if ($this->request->is('post')) {
             if ($this->Auth->login()) {
@@ -110,7 +115,7 @@ AuthとAclコンポーネントを追加する前に、多少の部品を加え�
             }
         }
     }
-     
+
     public function logout() {
         //ここは、今は空にしておいてください
     }
@@ -118,7 +123,6 @@ AuthとAclコンポーネントを追加する前に、多少の部品を加え�
 更に、以下の様にビューファイルを
 ``app/View/Users/login.ctp`` に作成してください::
 
-    <?php
     echo $this->Form->create('User', array('action' => 'login'));
     echo $this->Form->inputs(array(
         'legend' => __('Login'),
@@ -131,12 +135,11 @@ AuthとAclコンポーネントを追加する前に、多少の部品を加え�
 平文のパスワードを保存するのは極めて危険であり、またAuthComponentはパスワードがハッシュ化されていることを期待します。
 ``app/Model/User.php`` で以下を追加してください::
 
-    <?php
     App::uses('AuthComponent', 'Controller/Component');
     class User extends AppModel {
         // 他のコード。
 
-        public function beforeSave() {
+        public function beforeSave($options = array()) {
             $this->data['User']['password'] = AuthComponent::password($this->data['User']['password']);
             return true;
         }
@@ -148,7 +151,6 @@ AuthとAclコンポーネントを追加する前に、多少の部品を加え�
 コントローラ全体に認証とACLを行うなら、この ``AppController`` に対してセットアップを行います。
 次のコードを加えてください::
 
-    <?php
     class AppController extends Controller {
         public $components = array(
             'Acl',
@@ -160,7 +162,7 @@ AuthとAclコンポーネントを追加する前に、多少の部品を加え�
             'Session'
         );
         public $helpers = array('Html', 'Form', 'Session');
-    
+
         public function beforeFilter() {
             //AuthComponentの設定
             $this->Auth->loginAction = array('controller' => 'users', 'action' => 'login');
@@ -174,10 +176,14 @@ ACL をセットアップし終わってしまう前に、ユーザとグルー�
 そこで、グループとユーザを作成することを :php:class:`AuthComponent` に許可させるために、いくつかの例外を設けましょう。
 ``GroupsController`` と ``UsersController`` の **両方** に、次のコードを追加してください::
 
-    <?php
-    function beforeFilter() {
-        parent::beforeFilter(); 
+    public function beforeFilter() {
+        parent::beforeFilter();
+
+        // CakePHP 2.0
         $this->Auth->allow('*');
+
+        // CakePHP 2.1以上
+        $this->Auth->allow();
     }
 
 この記述はAuthComponentに、全てのアクションに対するパブリックなアクセスを許可するよう指定するものです。
@@ -214,12 +220,10 @@ AuthとACLをきちんと動作させるには、ユーザとグループをACL�
 これを使用するにあたり、モデル中で ``parentNode()`` を実行する必要があります。
 ``User`` モデルに次のコードを追加してください::
 
-    <?php
-    class User extends Model {
-        public $name = 'User';
+    class User extends AppModel {
         public $belongsTo = array('Group');
         public $actsAs = array('Acl' => array('type' => 'requester'));
-         
+
         public function parentNode() {
             if (!$this->id && empty($this->data)) {
                 return null;
@@ -236,12 +240,12 @@ AuthとACLをきちんと動作させるには、ユーザとグループをACL�
             }
         }
     }
+
 ``Group`` モデルには、次のコードを追加します::
 
-    <?php
-    class Group extends Model {
+    class Group extends AppModel {
         public $actsAs = array('Acl' => array('type' => 'requester'));
-         
+
         public function parentNode() {
             return null;
         }
@@ -282,10 +286,9 @@ MySQLのプロンプトで ``SELECT * FROM aros;`` を実行した場合、次�
 グループだけのACL
 -----------------
 
-グループごとのみのパーミッションに単純化したい場合、 ``User`` も出るに  ``bindNode()`` を実装する必要があります::
+グループごとのみのパーミッションに単純化したい場合、 ``User`` モデルに  ``bindNode()`` を実装する必要があります::
 
-    <?php
-    function bindNode($user) {
+    public function bindNode($user) {
         return array('model' => 'Group', 'foreign_key' => $user['User']['group_id']);
     }
 
@@ -320,7 +323,6 @@ ACOオブジェクトを作成するには、ACLシェルを用いるか、 ``Ac
 
 AclComponentを使う方法は次のようになります::
 
-    <?php
     $this->Acl->Aco->create(array('parent_id' => null, 'alias' => 'controllers'));
     $this->Acl->Aco->save();
 
@@ -329,8 +331,17 @@ AclComponentを使う方法は次のようになります::
 ひとつはアプリケーション全体に対するアクセス可否を簡単にすること、そしてモデルレコードのパーミッションをチェックするようなコントローラとアクションに関連することにはACLを使用しないということです。
 グローバルなルートACOを使用するには、 ``AuthComponent`` の設定を若干変更する必要があります。
 ACLがコントローラとアクションを走査するにあたり正しいノードパスを使用するために、 ``AuthComponent`` に根ノードの存在を教えてください。
-これを行うには、先のコードで定義してあるように、 ``AppController`` の ``$components`` で、配列が ``actionPAth`` を必ず含むようにしてください。
+これを行うには、先のコードで定義してあるように、 ``AppController`` の ``$components`` で、配列が ``actionPAth`` を必ず含むようにしてください::
+
+    class AppController extends Controller {
+        public $components = array(
+            'Acl',
+            'Auth' => array(
+                'authorize' => array(
+                    'Actions' => array('actionPath' => 'controllers')
+                )
+            ),
+            'Session'
+        );
 
 チュートリアルを続行するには、続けて :doc:`part-two` を見てください。
-
-

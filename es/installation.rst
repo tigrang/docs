@@ -20,14 +20,14 @@ Tienes dos opciones: descargar un archivo comprimido con todo el código
 directamente desde el repositorio de git.
 
 Para descargar la última versión estable, puedes vistar la página oficial
-`http://www.cakephp.org <http://www.cakephp.org>`_ y pichar en la opción
+`http://cakephp.org <http://cakephp.org>`_ y pichar en la opción
 "Download Now".
 
 Además, todas las versiones de CakePHP están hospedadas en `Github
-<http://github.com/cakephp/cakephp>`_. Github almacena tanto el código de
+<https://github.com/cakephp/cakephp>`_. Github almacena tanto el código de
 CakePHP como muchos otros plugins para el sistema. Las versiones *release* de
-CakePHP están disponibles aquí `Github downloads
-<http://github.com/cakephp/cakephp/downloads>`_.
+CakePHP están disponibles aquí `Github tags
+<https://github.com/cakephp/cakephp/tags>`_.
 
 También puedes obtener la última versión, con todos los bugs y mejoras
 corregidos hasta el último minuto (o al menos en ese día). Para ello puedes
@@ -157,7 +157,6 @@ tu fichero app/Config/core.php:
 
 ::
 
-   <?php
    /**
     * If you are on PHP 5.3 uncomment this line and correct your server timezone
     * to fix the date & time related errors.

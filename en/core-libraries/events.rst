@@ -55,7 +55,6 @@ Dispatching events
 So back to our example, we would have an `Order` model that will manage the buying logic,
 and probably a `place` method to save the order details and do any other logic::
 
-    <?php
     // Cart/Model/Order.php
     class Order extends AppModel {
 
@@ -77,7 +76,6 @@ about sending emails, and may not even have the inventory data to decrement the
 item from it, and definitely tracking usage statistics is not the best place to
 do it. So we need another solution, let's rewrite that using the event manager::
 
-    <?php
     // Cart/Model/Order.php
     App::uses('CakeEvent', 'Event');
     class Order extends AppModel {
@@ -98,7 +96,7 @@ That looks a lot cleaner, at gives us the opportunity to introduce the event
 classes and methods. The first thing you may notice is the call to ``getEventManager()``
 this is a method that is available by default in all Models, Controller and Views.
 This method will not return the same manager instance across models, and it is not
-shared between controllers and models, but they are between controllers and views, 
+shared between controllers and models, but they are between controllers and views,
 nevertheless. We will review later how to overcome this implementation detail.
 
 The ``getEventManager`` method returns an instance of :php:class:`CakeEventManager`,
@@ -106,13 +104,12 @@ and to dispatch events you use :php:meth:`CakeEventManager::dispatch()` which
 receives an instance of the :php:class:`CakeEvent` class. Let's dissect now the
 process of dispatching an event::
 
-    <?php
     new CakeEvent('Model.Order.afterPlace', $this, array(
         'order' => $order
     ));
 
 :php:class:`CakeEvent` receives 3 arguments in its constructor. The first one
-is the event name, you should try to keep this name as unique as possible, 
+is the event name, you should try to keep this name as unique as possible,
 while making it readable. We suggest a convention as follows: `Layer.eventName`
 for general events happening at a layer level (e.g. `Controller.startup`, `View.beforeRender`)
 and `Layer.Class.eventName` for events happening in specific classes on a layer,
@@ -141,11 +138,10 @@ Registering callbacks
 How do we register callbacks or observers to our new `afterPlace` event? This
 is subject to a wide variety of different implementations, but they all have
 to call the :php:meth:`CakeEventManager::attach()` method to register new actors.
-For simplicity's sake, let's imagine we know in the plugin what the callbacks 
+For simplicity's sake, let's imagine we know in the plugin what the callbacks
 are available in the controller, and say this controller is responsible for
 attaching them. The possible code would look like this::
 
-    <?php
     // Listeners configured somewhere else, maybe a config file:
     Configure::write('Order.afterPlace', array(
         'email-sending' => 'EmailSender::sendBuyEmail',
@@ -199,7 +195,6 @@ statistics. It would be natural to pass an instance of this class as a callback,
 instead of implementing a custom static function or converting any other workaround
 to trigger methods in this class. A listener is created as follows::
 
-    <?php
     App::uses('CakeEventListener', 'Event');
     class UserStatistic implements CakeEventListener {
 
@@ -221,6 +216,8 @@ to trigger methods in this class. A listener is created as follows::
 As you can see in the above code, the `attach` function can handle instances of
 the `CakeEventListener` interface. Internally, the event manager will read the
 array returned by `implementedEvents` method and wire the callbacks accordingly.
+
+.. _event-priorities:
 
 Establishing priorities
 -----------------------
@@ -244,7 +241,6 @@ executed with a `FIFO` policy, the first listener method to be attached is calle
 first and so on. You set priorities using the `attach` method for callbacks, and
 declaring it in the `implementedEvents` function for event listeners::
 
-    <?php
     // Setting priority for a callback
     $callback = array($this, 'doSomething');
     $this->getEventManager()->attach($callback, 'Model.Order.afterPlace', array('priority' => 2));
@@ -276,7 +272,6 @@ In order to toggle this option you have to add the `passParams` option to the
 third argument of the `attach` method, or declare it in the `implementedEvents`
 returned array similar to what you do with priorities::
 
-    <?php
     // Setting priority for a callback
     $callback = array($this, 'doSomething');
     $this->getEventManager()->attach($callback, 'Model.Order.afterPlace', array('passParams' => true));
@@ -298,7 +293,6 @@ In the above code the `doSomething` function and `updateBuyStatistic` method wil
 receive `$orderData` instead of the `$event` object. This is so, because in our
 previous example we trigger the `Model.Order.afterPlace` event with some data::
 
-    <?php
     $this->getEventManager()->dispatch(new CakeEvent('Model.Order.afterPlace', $this, array(
         'order' => $order
     )));
@@ -320,7 +314,6 @@ the code detects it cannot proceed any further.
 In order to stop events you can either return `false` in your callbacks or call
 the `stopPropagation` method on the event object::
 
-    <?php
     public function doSomething($event) {
         // ...
         return false; // stops the event
@@ -336,11 +329,10 @@ expected: any callback after the event was stopped will not be called. The secon
 consequence is optional and it depends on the code triggering the event, for
 instance, in our `afterPlace` example it would not make any sense to cancel the
 operation since the data was already saved and the cart emptied. Nevertheless, if
-we had a `beforePlace` stopping the event has a valid meaning.
+we had a `beforePlace` stopping the event would have a valid meaning.
 
 To check if an event was stopped, you call the `isStopped()` method in the event object::
 
-    <?php
     public function place($order) {
         $event = new CakeEvent('Model.Order.beforePlace', $this, array('order' => $order));
         $this->getEventManager()->dispatch($event);
@@ -368,11 +360,10 @@ the $order data.
 Event results can be altered either using the event object result property
 directly or returning the value in the callback itself::
 
-    <?php
     // A listener callback
     public function doSomething($event) {
         // ...
-        $alteredData = $event->data['order']  + $moreData;
+        $alteredData = $event->data['order'] + $moreData;
         return $alteredData;
     }
 
@@ -408,7 +399,6 @@ If for any reason you want to remove any callback from the event manager just ca
 the :php:meth:`CakeEventManager::detach()` method using as arguments the first two
 params you used for attaching it::
 
-    <?php
     // Attaching a function
     $this->getEventManager()->attach(array($this, 'doSomething'), 'My.event');
 
@@ -425,12 +415,12 @@ params you used for attaching it::
     // Attaching a CakeEventListener
     $listener = new MyCakeEventLister();
     $this->getEventManager()->attach($listener);
-        
+
     // Detaching a single event key from a listener
     $this->getEventManager()->detach($listener, 'My.event');
 
     // Detaching all callbacks implemented by a listener
-    $this->getEventManager()->attach($listener);
+    $this->getEventManager()->detach($listener);
 
 The global event manager
 ========================
@@ -457,7 +447,6 @@ the local callbacks will get called in the respective priority order.
 Accessing the global event manager is as easy as calling a static function,
 the following example will attach a global event to the `beforePlace` event::
 
-    <?php
     // In any configuration file or piece of code that executes before the event
     App::uses('CakeEventManager', 'Event');
     CakeEventManager::instance()->attach($aCallback, 'Model.Order.beforePlace');
@@ -474,11 +463,10 @@ to prevent some bugs. Remember that extreme flexibility implies extreme complexi
 Consider this callback that wants to listen for all Model beforeFinds but in
 reality, it cannot do its logic if the model is the Cart::
 
-    <?php
     App::uses('CakeEventManager', 'Event');
     CakeEventManager::instance()->attach('myCallback', 'Model.beforeFind');
 
-    function myCallback($event) {
+    public function myCallback($event) {
         if ($event->subject() instanceof Cart) {
             return;
         }
@@ -497,7 +485,7 @@ implementing callbacks such as using behaviors, components or helpers.
 Keep in mind that with great power comes great responsibility, decoupling your
 classes this way also means that you need to perform more and better integration
 testing on your code. Abusing this tool won't make your apps have a better architecture,
-quite the opposite, it will make the harder to read. Whereas in contrast, if you
+quite the opposite, it will make the code harder to read. Whereas in contrast, if you
 use it wisely, only for the stuff your really need, it will make you code easier
 to work with, test and integrate.
 
@@ -505,7 +493,7 @@ Additional Reading
 ==================
 
 .. toctree::
-    
+
     /core-libraries/collections
     /models/behaviors
     /controllers/components

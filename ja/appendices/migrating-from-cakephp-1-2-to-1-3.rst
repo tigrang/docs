@@ -81,28 +81,28 @@ app/config/bootstrap.php に、 ``$pluginPaths`` や ``$controllerPaths`` のよ
 ファイル名と含まれるメインクラスのマッピングのため、「libs/session.php」、「libs/socket.php」、「libs/model/schema.php」、「libs/model/behavior.php」のコアライブラリは名前が変更されています。:
 
 
--  session.php ⇒ cake\_session.php
+-  session.php -> cake\_session.php
 
   
-   -  App::import('Core', 'Session') ⇒ App::import('Core',
+   -  App::import('Core', 'Session') -> App::import('Core',
       'CakeSession')
 
--  socket.php ⇒ cake\_socket.php
+-  socket.php -> cake\_socket.php
 
   
-   -  App::import('Core', 'Socket') ⇒ App::import('Core',
+   -  App::import('Core', 'Socket') -> App::import('Core',
       'CakeSocket')
 
--  schema.php ⇒ cake\_schema.php
+-  schema.php -> cake\_schema.php
 
   
-   -  App::import('Model', 'Schema') ⇒ App::import('Model',
+   -  App::import('Model', 'Schema') -> App::import('Model',
       'CakeSchema')
 
--  behavior.php ⇒ model\_behavior.php
+-  behavior.php -> model\_behavior.php
 
   
-   -  App::import('Core', 'Behavior') ⇒ App::import('Core',
+   -  App::import('Core', 'Behavior') -> App::import('Core',
       'ModelBehavior')
 
 
@@ -399,7 +399,7 @@ Cacheはエンジン毎のシングルトンの使用をやめ、代わりに ``
 
 ::
 
-    <?php echo $this->element('sql_dump'); ?>
+    echo $this->element('sql_dump'); ?>
 
 このエレメントはレイアウトやビューのどこにでも置けます。
 ``sql_dump`` エレメントは ``Configure::read('debug')`` が2のときのみSQLログを生成します。
@@ -483,6 +483,7 @@ passedArgs が「url」オプションに自動的にマージされるように
 
 -  ``HtmlHelper::meta()`` の ``$inline`` 引数は削除されました。これは ``$options`` 配列にマージされました。
 -  ``HtmlHelper::link()`` の ``$escapeTitle`` 引数は削除されました。代わりに ``$options['escape']`` を使用してください。
+   ``escape`` オプションはタイトルと属性をエスケープするかどうかを同時に設定します。
 -  ``HtmlHelper::para()`` の ``$escape`` 引数は削除されました。代わりに ``$options['escape']`` を使用してください。
 -  ``HtmlHelper::div()`` の ``$escape`` 引数は削除されました。代わりに ``$options['escape']`` を使用してください。
 -  ``HtmlHelper::tag()`` の ``$escape`` 引数は削除されました。代わりに ``$options['escape']`` を使用してください。

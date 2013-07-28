@@ -76,7 +76,7 @@ restrict the methods that are run::
     e.g. filter=myMethod
 
 Only tests containing the string ``myMethod`` will be run on the next refresh.
-The cake testsuite shell also supports a -filter option to filter methods.
+The cake test shell also supports a --filter option to filter methods.
 
 Assertion methods
 -----------------
@@ -172,7 +172,6 @@ suites as composable entities in the runner. You can place group tests inside
 the cases directory and use ``PHPUnit_Framework_TestSuite`` as a base class. An
 example Testsuite would look like::
 
-    <?php
     class AllJavascriptHelpersTest extends PHPUnit_Framework_TestSuite {
     
     /**

@@ -23,14 +23,13 @@ quick usage.
 Here's a quick example of a controller action that uses a CakePHP
 model to save data to a database table::
 
-    <?php
     public function edit($id) {
         // Has any form data been POSTed?
         if ($this->request->is('post')) {
             // If the form data can be validated and saved...
             if ($this->Recipe->save($this->request->data)) {
                 // Set a session flash message and redirect.
-                $this->Session->setFlash("Recipe Saved!");
+                $this->Session->setFlash('Recipe Saved!');
                 $this->redirect('/recipes');
             }
         }
@@ -46,7 +45,6 @@ information). If for some reason your data isn't saving, be sure to check to see
 if some validation rules are being broken. You can debug this situation by
 outputting :php:attr:`Model::$validationErrors`::
 
-    <?php
     if ($this->Recipe->save($this->request->data)) {
         // handle the success.
     }
@@ -62,7 +60,6 @@ find useful:
 data array inside a model. This is useful when using models with
 the ActiveRecord features offered by Model::
 
-    <?php
     $this->Post->read(null, 1);
     $this->Post->set('title', 'New title for the article');
     $this->Post->save();
@@ -71,7 +68,6 @@ Is an example of how you can use ``set()`` to update and save
 single fields, in an ActiveRecord approach. You can also use
 ``set()`` to assign new values to multiple fields::
 
-    <?php
     $this->Post->read(null, 1);
     $this->Post->set(array(
         'title' => 'New title',
@@ -81,6 +77,15 @@ single fields, in an ActiveRecord approach. You can also use
 
 The above would update the title and published fields and save them
 to the database.
+
+:php:meth:`Model::clear()`
+==========================
+
+This method can be used to reset model state and clear out any unsaved data and
+validation errors.
+
+.. versionadded:: 2.4
+
 
 :php:meth:`Model::save(array $data = null, boolean $validate = true, array $fieldList = array())`
 =================================================================================================
@@ -100,7 +105,6 @@ security, you can limit the saved fields to those listed in
 
 The save method also has an alternate syntax::
 
-    <?php
     save(array $data = null, array $params = array())
 
 ``$params`` array can have any of the following available options
@@ -110,6 +114,7 @@ as keys:
 * ``fieldList`` An array of fields you want to allow for saving.
 * ``callbacks`` Set to false to disable callbacks.  Using 'before' or 'after'
   will enable only those callbacks.
+* ``counterCache`` (since 2.4) Boolean to control updating of counter caches (if any)
 
 More information about model callbacks is available
 :doc:`here <callback-methods>`
@@ -117,8 +122,8 @@ More information about model callbacks is available
 
 .. tip::
 
-    If you don't want the updated field to be updated when saving some
-    data add ``'updated' => false`` to your ``$data`` array
+    If you don't want the ``modified`` field to be automatically updated when saving some
+    data add ``'modified' => false`` to your ``$data`` array
 
 Once a save has been completed, the ID for the object can be found
 in the ``$id`` attribute of the model object - something especially
@@ -126,7 +131,6 @@ handy when creating new objects.
 
 ::
 
-    <?php
     $this->Ingredient->save($newData);
     $newIngredientId = $this->Ingredient->id;
 
@@ -134,7 +138,6 @@ Creating or updating is controlled by the model's ``id`` field. If
 ``$Model->id`` is set, the record with this primary key is updated.
 Otherwise a new record is created::
 
-    <?php
     // Create: id isn't set or is null
     $this->Recipe->create();
     $this->Recipe->save($this->request->data);
@@ -145,13 +148,12 @@ Otherwise a new record is created::
 
 .. tip::
 
-    When calling save in a loop, don't forget to call ``create()``
+    When calling save in a loop, don't forget to call ``create()``.
 
 
 If you want to update a value, rather than create a new one, make sure
 your are passing the primary key field into the data array::
 
-    <?php
     $data = array('id' => 10, 'title' => 'My new title');
     // This will update Recipe with id 10
     $this->Recipe->save($data);
@@ -160,16 +162,19 @@ your are passing the primary key field into the data array::
 ================================================
 
 This method resets the model state for saving new information.
+It does not actually create a record in the database but clears
+Model::$id and sets Model::$data based on your database field defaults. If you have
+not defined defaults for your database fields, Model::$data will be set to an empty array.
 
-If the ``$data`` parameter (using the array format outlined above)
-is passed, the model instance will be ready to save with that data
-(accessible at ``$this->data``).
+If the ``$data`` parameter (using the array format outlined above) is passed, it will be merged with the database 
+field defaults and the model instance will be ready to save with that data (accessible at ``$this->data``).
 
-If ``false`` is passed instead of an array, the model instance will
-not initialize fields from the model schema that are not already
-set, it will only reset fields that have already been set, and
-leave the rest unset. Use this to avoid updating fields in the
-database that were already set.
+If ``false`` or ``null`` are passed for the ``$data`` parameter, Model::data will be set to an empty array. 
+
+.. tip::
+
+    If you want to insert a new row instead of updating an existing one you should always call create() first.
+    This avoids conflicts with possible prior save calls in callbacks or other places.
 
 :php:meth:`Model::saveField(string $fieldName, string $fieldValue, $validate = false)`
 ======================================================================================
@@ -183,25 +188,35 @@ field.
 For example, to update the title of a blog post, the call to
 ``saveField`` from a controller might look something like this::
 
-    <?php
     $this->Post->saveField('title', 'A New Title for a New Day');
 
 .. warning::
 
-    You can't stop the updated field being updated with this method, you
+    You can't stop the ``modified`` field being updated with this method, you
     need to use the save() method.
+
+The saveField method also has an alternate syntax::
+
+    saveField(string $fieldName, string $fieldValue, array $params = array())
+
+``$params`` array can have any of the following available options
+as keys:
+
+* ``validate`` Set to true/false to enable disable validation.
+* ``callbacks`` Set to false to disable callbacks.  Using 'before' or 'after'
+  will enable only those callbacks.
+* ``counterCache`` (since 2.4) Boolean to control updating of counter caches (if any)
 
 :php:meth:`Model::updateAll(array $fields, array $conditions)`
 ==============================================================
 
-Updates many records in a single call. Records to be updated are
+Updates one or more records in a single call. Records to be updated are
 identified by the ``$conditions`` array, and fields to be updated,
 along with their values, are identified by the ``$fields`` array.
 
 For example, to approve all bakers who have been members for over a
 year, the update call might look something like::
 
-    <?php
     $this_year = date('Y-m-d h:i:s', strtotime('-1 year'));
 
     $this->Baker->updateAll(
@@ -212,7 +227,7 @@ year, the update call might look something like::
 .. tip::
 
     The $fields array accepts SQL expressions. Literal values should be
-    quoted manually.
+    quoted manually using :php:meth:`Sanitize::escape()`.
 
 .. note::
 
@@ -223,7 +238,6 @@ year, the update call might look something like::
 For example, to close all tickets that belong to a certain
 customer::
 
-    <?php
     $this->Ticket->updateAll(
         array('Ticket.status' => "'closed'"),
         array('Ticket.customer_id' => 453)
@@ -245,15 +259,15 @@ options may be used:
   Should be set to false if database/table does not support transactions.
 *  ``fieldList``: Equivalent to the $fieldList parameter in Model::save()
 *  ``deep``: (since 2.1) If set to true, also associated data is saved, see also saveAssociated
+* ``counterCache`` (since 2.4) Boolean to control updating of counter caches (if any)
 
 For saving multiple records of single model, $data needs to be a
 numerically indexed array of records like this::
 
-    <?php
     $data = array(
         array('title' => 'title 1'),
         array('title' => 'title 2'),
-    )
+    );
 
 .. note::
 
@@ -264,33 +278,30 @@ numerically indexed array of records like this::
 
 It is also acceptable to have the data in the following format::
 
-    <?php
     $data = array(
         array('Article' => array('title' => 'title 1')),
         array('Article' => array('title' => 'title 2')),
-    )
+    );
 
 To save also associated data with ``$options['deep'] = true`` (since 2.1), the two above examples would look like::
 
-    <?php
     $data = array(
         array('title' => 'title 1', 'Assoc' => array('field' => 'value')),
         array('title' => 'title 2'),
-    )
+    );
     $data = array(
         array('Article' => array('title' => 'title 1'), 'Assoc' => array('field' => 'value')),
         array('Article' => array('title' => 'title 2')),
-    )
+    );
     $Model->saveMany($data, array('deep' => true));
 
 Keep in mind that if you want to update a record instead of creating a new
 one you just need to add the primary key index to the data row::
 
-    <?php
-    array(
+    $data = array(
         array('Article' => array('title' => 'New article')), // This creates a new row
         array('Article' => array('id' => 2, 'title' => 'title 2')), // This updates an existing row
-    )
+    );
 
 
 :php:meth:`Model::saveAssociated(array $data = null, array $options = array())`
@@ -306,28 +317,52 @@ options may be used:
 * ``fieldList``: Equivalent to the $fieldList parameter in Model::save()
 * ``deep``: (since 2.1) If set to true, not only directly associated data is saved,
   but deeper nested associated data as well. Defaults to false.
+* ``counterCache`` (since 2.4) Boolean to control updating of counter caches (if any)
 
 For saving a record along with its related record having a hasOne
 or belongsTo association, the data array should be like this::
 
-    <?php
-    array(
+    $data = array(
         'User' => array('username' => 'billy'),
         'Profile' => array('sex' => 'Male', 'occupation' => 'Programmer'),
-    )
+    );
 
 For saving a record along with its related records having hasMany
 association, the data array should be like this::
 
-    <?php
-    array(
+    $data = array(
         'Article' => array('title' => 'My first article'),
         'Comment' => array(
             array('body' => 'Comment 1', 'user_id' => 1),
             array('body' => 'Comment 2', 'user_id' => 12),
             array('body' => 'Comment 3', 'user_id' => 40),
         ),
-    )
+    );
+
+And for saving a record along with its related records having hasMany with more than two
+levels deep associations, the data array should be as follow::
+
+    $data = array(
+        'User' => array('email' => 'john-doe@cakephp.org'),
+        'Cart' => array(
+            array(
+                'payment_status_id' => 2,
+                'total_cost' => 250,
+                'CartItem' => array(
+                    array(
+                        'cart_product_id' => 3,
+                        'quantity' => 1,
+                        'cost' => 100,
+                    ),
+                    array(
+                        'cart_product_id' => 5,
+                        'quantity' => 1,
+                        'cost' => 150,
+                    )
+                )
+            )
+        )
+    );
 
 .. note::
 
@@ -346,26 +381,23 @@ For saving a record along with its related records having hasMany
 association and deeper associated Comment belongsTo User data as well,
 the data array should be like this::
 
-    <?php
     $data = array(
         'Article' => array('title' => 'My first article'),
         'Comment' => array(
             array('body' => 'Comment 1', 'user_id' => 1),
-            array('body' => 'Save a new user as well', 'User' => array('first' => 'mad', 'last' => 'coder'))
+            array('body' => 'Save a new user as well', 'User' => array('first' => 'mad', 'last' => 'coder')),
         ),
-    )
+    );
 
 And save this data with::
 
-    <?php
     $Article->saveAssociated($data, array('deep' => true));
 
 .. versionchanged:: 2.1
-    ``Model::saveAll()`` and friends now support passing the `fieldList` for multiple models. 
+    ``Model::saveAll()`` and friends now support passing the `fieldList` for multiple models.
 
 Example of using ``fieldList`` with multiple models::
 
-    <?php
     $this->SomeModel->saveAll($data, array(
         'fieldList' => array(
             'SomeModel' => array('field_1'),
@@ -409,7 +441,6 @@ and a related Profile. The example action shown below will assume
 that you've POSTed enough data (using the FormHelper) to create a
 single User and a single Profile::
 
-    <?php
     public function add() {
         if (!empty($this->request->data)) {
             // We can save the User data:
@@ -459,17 +490,16 @@ models at the same time.
 First, you need to build your form for both Company and Account
 models (we'll assume that Company hasMany Account)::
 
-    <?php
-    echo $form->create('Company', array('action' => 'add'));
-    echo $form->input('Company.name', array('label' => 'Company name'));
-    echo $form->input('Company.description');
-    echo $form->input('Company.location');
+    echo $this->Form->create('Company', array('action' => 'add'));
+    echo $this->Form->input('Company.name', array('label' => 'Company name'));
+    echo $this->Form->input('Company.description');
+    echo $this->Form->input('Company.location');
 
-    echo $form->input('Account.0.name', array('label' => 'Account name'));
-    echo $form->input('Account.0.username');
-    echo $form->input('Account.0.email');
+    echo $this->Form->input('Account.0.name', array('label' => 'Account name'));
+    echo $this->Form->input('Account.0.username');
+    echo $this->Form->input('Account.0.email');
 
-    echo $form->end('Add');
+    echo $this->Form->end('Add');
 
 Take a look at the way we named the form fields for the Account
 model. If Company is our main model, ``saveAssociated()`` will expect the
@@ -485,7 +515,6 @@ having ``Account.0.fieldName`` is exactly what we need.
 Now, in our CompaniesController we can create an ``add()``
 action::
 
-    <?php
     public function add() {
         if (!empty($this->request->data)) {
             // Use the following to avoid validation errors:
@@ -507,7 +536,6 @@ Our example involves the Head of Cake School asking us to write an application t
 him to log a student's attendance on a course with days attended and grade. Take
 a look at the following code.::
 
-   <?php
    // Controller/CourseMembershipController.php
    class CourseMembershipsController extends AppController {
        public $uses = array('CourseMembership');
@@ -604,7 +632,7 @@ then the two meta-fields for the CourseMembership, e.g.::
 
         // View/CourseMemberships/add.ctp
 
-        <?php echo $form->create('CourseMembership'); ?>
+        <?php echo $this->Form->create('CourseMembership'); ?>
             <?php echo $this->Form->input('Student.id', array('type' => 'text', 'label' => 'Student ID', 'default' => 1)); ?>
             <?php echo $this->Form->input('Course.id', array('type' => 'text', 'label' => 'Course ID', 'default' => 1)); ?>
             <?php echo $this->Form->input('CourseMembership.days_attended'); ?>
@@ -644,20 +672,89 @@ Saving Related Model Data (HABTM)
 Saving models that are associated by hasOne, belongsTo, and hasMany
 is pretty simple: you just populate the foreign key field with the
 ID of the associated model. Once that's done, you just call the
-save() method on the model, and everything gets linked up
-correctly.
+``save()`` method on the model, and everything gets linked up
+correctly. An example of the required format for the data array
+passed to ``save()`` for the Tag model is shown below::
 
-With HABTM, you need to set the ID of the associated model in your
-data array. We'll build a form that creates a new tag and
-associates it on the fly with some recipe.
+    Array
+    (
+        [Recipe] => Array
+            (
+                [id] => 42
+            )
+        [Tag] => Array
+            (
+                [name] => Italian
+            )
+    )
+
+You can also use this format to save several records and their
+HABTM associations with ``saveAll()``, using an array like the
+following::
+
+    Array
+    (
+        [0] => Array
+            (
+                [Recipe] => Array
+                    (
+                        [id] => 42
+                    )
+                [Tag] => Array
+                    (
+                        [name] => Italian
+                    )
+            )
+        [1] => Array
+            (
+                [Recipe] => Array
+                    (
+                        [id] => 42
+                    )
+                [Tag] => Array
+                    (
+                        [name] => Pasta
+                    )
+            )
+        [2] => Array
+            (
+                [Recipe] => Array
+                    (
+                        [id] => 51
+                    )
+                [Tag] => Array
+                    (
+                        [name] => Mexican
+                    )
+            )
+        [3] => Array
+            (
+                [Recipe] => Array
+                    (
+                        [id] => 17
+                    )
+                [Tag] => Array
+                    (
+                        [name] => American (new)
+                    )
+            )
+    )
+
+Passing the above array to ``saveAll()`` will create the contained tags,
+each associated with their respective recipes.
+
+As an example, we'll build a form that creates a new tag and
+generates the proper data array to associate it on the fly with
+some recipe.
 
 The simplest form might look something like this (we'll assume that
-$recipe\_id is already set to something)::
+``$recipe_id`` is already set to something)::
 
-    <?php echo $this->Form->create('Tag');?>
+    <?php echo $this->Form->create('Tag'); ?>
         <?php echo $this->Form->input(
             'Recipe.id',
-            array('type' => 'hidden', 'value' => $recipe_id)); ?>
+            array('type' => 'hidden', 'value' => $recipe_id)
+        ); ?>
         <?php echo $this->Form->input('Tag.name'); ?>
     <?php echo $this->Form->end('Add Tag'); ?>
 
@@ -665,11 +762,8 @@ In this example, you can see the ``Recipe.id`` hidden field whose
 value is set to the ID of the recipe we want to link the tag to.
 
 When the ``save()`` method is invoked within the controller, it'll
-automatically save the HABTM data to the database.
+automatically save the HABTM data to the database::
 
-::
-
-    <?php
     public function add() {
         // Save the association
         if ($this->Tag->save($this->request->data)) {
@@ -678,7 +772,7 @@ automatically save the HABTM data to the database.
     }
 
 With the preceding code, our new Tag is created and associated with
-a Recipe, whose ID was set in $this->request->data['Recipe']['id'].
+a Recipe, whose ID was set in ``$this->request->data['Recipe']['id']``.
 
 Other ways we might want to present our associated data can include
 a select drop down list. The data can be pulled from the model
@@ -686,12 +780,11 @@ using the ``find('list')`` method and assigned to a view variable
 of the model name. An input with the same name will automatically
 pull in this data into a ``<select>``::
 
-    <?php
     // in the controller:
     $this->set('tags', $this->Recipe->Tag->find('list'));
 
     // in the view:
-    $form->input('tags');
+    $this->Form->input('tags');
 
 A more likely scenario with a HABTM relationship would include a
 ``<select>`` set to allow multiple selections. For example, a
@@ -700,7 +793,6 @@ data is pulled out of the model the same way, but the form input is
 declared slightly different. The tag name is defined using the
 ``ModelName`` convention::
 
-    <?php
     // in the controller:
     $this->set('tags', $this->Recipe->Tag->find('list'));
 
@@ -710,6 +802,37 @@ declared slightly different. The tag name is defined using the
 Using the preceding code, a multiple select drop down is created,
 allowing for multiple choices to automatically be saved to the
 existing Recipe being added or saved to the database.
+
+Self HABTM
+~~~~~~~~~~
+
+Normally HABTM is used to bring 2 models together but it can also
+be used with only 1 model, though it requires some extra attention.
+
+The key is in the model setup the ``className``. Simply adding a
+``Project`` HABTM ``Project`` relation causes issues saving data.
+By setting the ``className`` to the models name and use the alias as
+key we avoid those issues.::
+
+    class Project extends AppModel {
+        public $hasAndBelongsToMany = array(
+            'RelatedProject' => array(
+                'className'              => 'Project',
+                'foreignKey'             => 'projects_a_id',
+                'associationForeignKey'  => 'projects_b_id',
+            ),
+        );
+    }
+
+Creating form elements and saving the data works the same as before but you use the alias instead. This::
+
+    $this->set('projects', $this->Project->find('list'));
+    $this->Form->input('Project');
+
+Becomes this::
+
+    $this->set('relatedProjects', $this->Project->find('list'));
+    $this->Form->input('RelatedProject');
 
 What to do when HABTM becomes complicated?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -762,7 +885,7 @@ Datatables
 
 While CakePHP can have datasources that aren't database driven, most of the
 time, they are. CakePHP is designed to be agnostic and will work with MySQL,
-MSSQL, Oracle, PostgreSQL and others. You can create your database tables as you
+MSSQL, PostgreSQL and others. You can create your database tables as you
 normally would. When you create your Model classes, they'll automatically map to
 the tables that you've created. Table names are by convention lowercase and
 pluralized with multi-word table names separated by underscores. For example, a
@@ -775,25 +898,24 @@ view. Field names are by convention lowercase and separated by underscores.
 Using created and modified
 --------------------------
 
-By defining a created or modified field in your database table as datetime
-fields, CakePHP will recognize those fields and populate them automatically
+By defining a ``created`` and/or ``modified`` field in your database table as datetime
+fields (default null), CakePHP will recognize those fields and populate them automatically
 whenever a record is created or saved to the database (unless the data being
 saved already contains a value for these fields).
 
-The created and modified fields will be set to the current date and time when
+The ``created`` and ``modified`` fields will be set to the current date and time when
 the record is initially added. The modified field will be updated with the
 current date and time whenever the existing record is saved.
 
-If you have updated, created or modified data in your $this->data (e.g. from a
+If you have ``created`` or ``modified`` data in your $this->data (e.g. from a
 Model::read or Model::set) before a Model::save() then the values will be taken
-from $this->data and not automagically updated. Either use
+from $this->data and not automagically updated. If you don't want that you can use
 ``unset($this->data['Model']['modified'])``, etc. Alternatively you can override
 the Model::save() to always do it for you::
 
-    <?php
     class AppModel extends Model {
 
-        public function save($data = null, $validate = true, $fieldList = array()) }
+        public function save($data = null, $validate = true, $fieldList = array()) {
             // Clear modified field value before each save
             $this->set($data);
             if (isset($this->data[$this->alias]['modified'])) {
@@ -807,3 +929,4 @@ the Model::save() to always do it for you::
 .. meta::
     :title lang=en: Saving Your Data
     :keywords lang=en: doc models,validation rules,data validation,flash message,null model,table php,request data,php class,model data,database table,array,recipes,success,reason,snap,data model
+

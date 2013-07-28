@@ -28,7 +28,6 @@ the basis of your pagination queries.  They are augmented by the sort, direction
 limit, and page parameters passed in from the url. It is important to note
 here that the order key must be defined in an array structure like below::
 
-    <?php
     class PostsController extends AppController {
 
         public $paginate = array(
@@ -42,7 +41,6 @@ here that the order key must be defined in an array structure like below::
 You can also include other :php:meth:`~Model::find()` options, such as
 ``fields``::
 
-    <?php
     class PostsController extends AppController {
 
         public $paginate = array(
@@ -63,7 +61,6 @@ makes it very simple to use behaviors like :php:class:`ContainableBehavior` with
 pagination::
 
 
-    <?php
     class RecipesController extends AppController {
 
         public $paginate = array(
@@ -76,7 +73,6 @@ In addition to defining general pagination values, you can define more than one
 set of pagination defaults in the controller, you just name the keys of the
 array after the model you wish to configure::
 
-    <?php
     class PostsController extends AppController {
 
         public $paginate = array(
@@ -98,7 +94,6 @@ information is set to ``$this->request->params['paging']``, and is used by
 adds PaginatorHelper to the list of helpers in your controller, if it has not
 been added already.::
 
-    <?php
     public function list_recipes() {
         // similar to findAll(), but fetches paged results
         $data = $this->paginate('Recipe');
@@ -108,13 +103,11 @@ been added already.::
 You can filter the records by passing conditions as second
 parameter to the ``paginate()`` function.::
 
-    <?php
     $data = $this->paginate('Recipe', array('Recipe.title LIKE' => 'a%'));
 
 Or you can also set ``conditions`` and other keys in the
 ``$paginate`` array inside your action.::
 
-    <?php
     public function list_recipes() {
         $this->paginate = array(
             'conditions' => array('Recipe.title LIKE' => 'a%'),
@@ -135,7 +128,6 @@ a behavior attached to your model. Behaviors implementing ``paginate`` and/or
 ``paginateCount`` should implement the method signatures defined below with the
 normal additional first parameter of ``$model``::
 
-    <?php
     // paginate and paginateCount implemented on a behavior.
     public function paginate(Model $model, $conditions, $fields, $order, $limit, $page = 1, $recursive = null, $extra = array()) {
         // method content
@@ -145,23 +137,33 @@ normal additional first parameter of ``$model``::
         // method body
     }
 
-
 It's seldom you'll need to implement paginate() and paginateCount().  You should
 make sure  you can't achieve your goal with the core model methods, or a custom
-finder.
+finder. To paginate with a custom find type, you should set the ``0``'th
+element, or the ``findType`` key as of 2.3::
+
+    public $paginate = array(
+        'popular'
+    );
+
+Since the 0th index is difficult to manage, in 2.3 the ``findType`` option was
+added::
+
+    public $paginate = array(
+        'findType' => 'popular'
+    );
 
 The ``paginate()`` method should implement the following method signature.  To
 use your own method/logic override it in the model you wish to get the data
 from::
 
-    <?php
     /**
      * Overridden paginate method - group by week, away_team_id and home_team_id
      */
     public function paginate($conditions, $fields, $order, $limit, $page = 1, $recursive = null, $extra = array()) {
         $recursive = -1;
         $group = $fields = array('week', 'away_team_id', 'home_team_id');
-         return $this->find('all', compact('conditions', 'fields', 'order', 'limit', 'page', 'recursive', 'group'));
+        return $this->find('all', compact('conditions', 'fields', 'order', 'limit', 'page', 'recursive', 'group'));
     }
 
 You also need to override the core ``paginateCount()``, this method
@@ -169,7 +171,6 @@ expects the same arguments as ``Model::find('count')``. The example
 below uses some Postgres-specifc features, so please adjust
 accordingly depending on what database you are using::
 
-    <?php
     /**
      * Overridden paginateCount method
      */
@@ -184,7 +185,6 @@ The observant reader will have noticed that the paginate method
 we've defined wasn't actually necessary - All you have to do is add
 the keyword in controller's ``$paginate`` class variable::
 
-    <?php
     /**
      * Add GROUP BY clause
      */
@@ -206,6 +206,7 @@ the keyword in controller's ``$paginate`` class variable::
                 'group' => array('week', 'home_team_id', 'away_team_id')
             )
         );
+    }
 
 In CakePHP 2.0, you no longer need to implement ``paginateCount()`` when using
 group clauses.  The core ``find('count')`` will correctly count the total number
@@ -219,7 +220,6 @@ undesirable as it can allow users to sort on un-indexed columns, or virtual
 fields that can be expensive to calculate. You can use the 3rd parameter of
 ``Controller::paginate()`` to restrict the columns sorting will be done on::
 
-    <?php
     $this->paginate('Post', array(), array('title', 'slug'));
 
 This would allow sorting on the title and slug columns only. A user that sets
@@ -234,7 +234,6 @@ rows in a paginated set.  By default CakePHP limits the maximum number of rows
 that can be fetched to 100.  If this default is not appropriate for your
 application, you can adjust it as part of the pagination options::
 
-    <?php
     public $paginate = array(
         // other keys here.
         'maxLimit' => 10
@@ -256,7 +255,6 @@ named parameters in the component. Incoming requests will accept only the chosen
 type, and the :php:class:`PaginatorHelper` will generate links with the chosen type of
 parameter::
 
-    <?php
     public $paginate = array(
         'paramType' => 'querystring'
     );
@@ -264,7 +262,6 @@ parameter::
 The above would enable querystring parameter parsing and generation. You can
 also modify the ``$settings`` property on the PaginatorComponent::
 
-    <?php
     $this->Paginator->settings['paramType'] = 'querystring';
 
 By default all of the typical paging parameters will be converted into GET
@@ -275,13 +272,11 @@ arguments.
 
     You can run into a situation where assigning a value to a nonexistent property will throw errors::
 
-        <?php
         $this->paginate['limit'] = 10;
 
     will throw the error “Notice: Indirect modification of overloaded property $paginate has no effect”.
     Assigning an initial value to the property solves the issue::
 
-        <?php
         $this->paginate = array();
         $this->paginate['limit'] = 10;
         //or
@@ -289,18 +284,34 @@ arguments.
 
     Or just declare the property in the controller class::
 
-        <?php
         class PostsController {
             public $paginate = array();
         }
 
-    Or use ``$this->Paginator->setting = array('limit' => 10);``
+    Or use ``$this->Paginator->settings = array('limit' => 10);``
 
     Make sure you have added the Paginator component to your $components array if
     you want to modify the ``$settings`` property of the PaginatorComponent.
 
     Either of these approaches will solve the notice errors.
 
+Out of range page requests
+==========================
+As of 2.3 the PaginatorComponent will throw a `NotFoundException` when trying to
+access a non-existent page, i.e. page number requested is greater than total
+page count.
+
+So you could either let the normal error page be rendered or use a try catch
+block and take appropriate action when a `NotFoundException` is caught::
+
+    public function index() {
+        try {
+            $this->paginate();
+        } catch (NotFoundException $e) {
+            //Do something here like redirecting to first or last page.
+            //$this->request->params['paging'] will give you required info.
+        }
+    }
 
 AJAX Pagination
 ===============

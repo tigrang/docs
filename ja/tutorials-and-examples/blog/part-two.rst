@@ -1,6 +1,5 @@
-#####################################
 ブログチュートリアル - レイヤーの追加
-#####################################
+*************************************
 
 Postモデルの作成
 ================
@@ -11,15 +10,12 @@ CakePHPのモデルを作成することで、データベースとやりとり�
 CakePHPのモデルクラスのファイルは、 ``/app/Model`` の中にあり、今回は、 ``/app/Model/Post.php`` というファイルを作って保存します。
 ファイルの中身全体は次のようになります::
 
-    <?php
     class Post extends AppModel {
-        public $name = 'Post';
     }
 
-命名規約は、CakePHPでは非常にに大切です。
+命名規約は、CakePHPでは非常に大切です。
 モデルをPostという名前にすることで、CakePHPは自動的に、このモデルはPostsControllerで使用されるのだろう、と考えます。
 また、 ``posts`` という名前のデータベーステーブルと結びつけられます。
-
 
 .. note::
 
@@ -38,9 +34,7 @@ Postsコントローラの作成
 この新しいコントローラは、 ``PostsController.php`` という名前で、 ``/app/Controller`` ディレクトリの中に配置します。
 基本的なコントローラは次のようになります::
 
-    <?php
     class PostsController extends AppController {
-        public $name = 'Posts';
         public $helpers = array('Html', 'Form');
     }
 
@@ -49,13 +43,9 @@ Postsコントローラの作成
 例えば、ユーザが
 www.example.com/posts/index(www.example.com/posts/と同じです)
 をリクエストした場合、投稿記事の一覧が表示されると期待するでしょう。
-このアクションのコードは次のようになります:
+このアクションのコードは次のようになります::
 
-::
-
-    <?php
     class PostsController extends AppController {
-        public $name = 'Posts';
         public $helpers = array('Html', 'Form');
 
         public function index() {
@@ -92,12 +82,10 @@ Cakeのビュー(*view*)は、アプリケーションのレイアウト(*layout
 レイアウト(*Layout*)は、ビューを囲む表示用のコードで、独自に定義したり、切り替えたりすることも可能ですが、今のところは、デフォルト(*default*)のものを使用することにしましょう。
 
 一つ前のセクションの ``set()`` メソッドによって、ビューから「posts」変数が使えるように割り当てたのを覚えていますか。
-ビューに渡されたデータは次のようなものになっています:
-
-::
+ビューに渡されたデータは次のようなものになっています::
 
     // print_r($posts) の出力:
-    
+
     Array
     (
         [0] => Array
@@ -136,10 +124,12 @@ Cakeのビュー(*view*)は、アプリケーションのレイアウト(*layout
     )
 
 Cakeのビューファイルは、 ``/app/View`` の中の、コントローラ名に対応するフォルダの中に保存されています(この場合は、「Posts」というフォルダを作成します)。
-この投稿記事データをテーブル表示するには、ビューのコードは次のようなものにできます::
+この投稿記事データをテーブル表示するには、ビューのコードは次のようなものにできます
+
+.. code-block:: php
 
     <!-- File: /app/View/Posts/index.ctp -->
-    
+
     <h1>Blog posts</h1>
     <table>
         <tr>
@@ -147,20 +137,20 @@ Cakeのビューファイルは、 ``/app/View`` の中の、コントローラ�
             <th>Title</th>
             <th>Created</th>
         </tr>
-    
+
         <!-- ここから、$posts配列をループして、投稿記事の情報を表示 -->
-    
+
         <?php foreach ($posts as $post): ?>
         <tr>
             <td><?php echo $post['Post']['id']; ?></td>
             <td>
-                <?php echo $this->Html->link($post['Post']['title'], 
+                <?php echo $this->Html->link($post['Post']['title'],
     array('controller' => 'posts', 'action' => 'view', $post['Post']['id'])); ?>
             </td>
             <td><?php echo $post['Post']['created']; ?></td>
         </tr>
         <?php endforeach; ?>
-    
+        <?php unset($post); ?>
     </table>
 
 シンプルですよね。
@@ -185,9 +175,7 @@ http://www.example.com/posts/index
 もしそういう表示が出ない場合には、何かおかしくなってしまったか、もうすでにあなたがその定義作業をしてしまったから（仕事がハヤイ！）か、のどちらかです。
 そうでないなら、これからPostsControllerの中に作ってみましょう::
 
-    <?php
     class PostsController extends AppController {
-        public $name = 'Posts';
         public $helpers = array('Html', 'Form');
 
         public function index() {
@@ -195,33 +183,45 @@ http://www.example.com/posts/index
         }
 
         public function view($id = null) {
-            $this->Post->id = $id;
-            $this->set('post', $this->Post->read());
+            if (!$id) {
+                throw new NotFoundException(__('Invalid post'));
+            }
+
+            $post = $this->Post->findById($id);
+            if (!$post) {
+                throw new NotFoundException(__('Invalid post'));
+            }
+            $this->set('post', $post);
         }
     }
 
 ``set()`` の呼び出しはもう知っていますね。
-``find('all')`` の代わりに、 ``read()`` を使っていることに注目してください。
+``find('all')`` の代わりに、 ``findById()`` を使っていることに注目してください。
 今回は、ひとつの投稿記事の情報しか必要としないからです。
 
 ビューのアクションが、ひとつのパラメータを取っていることに注意してください。
 それは、これから表示する投稿記事のID番号です。
 このパラメータは、リクエストされたURLを通して渡されます。
-ユーザが、/posts/view/3とリクエストすると、「3」という値が ``$id`` として渡されます。
+ユーザが、 ``/posts/view/3`` とリクエストすると、「3」という値が ``$id`` として渡されます。
+
+ユーザーが実在するレコードにアクセスすることを保証するために少しだけエラーチェックを行います。
+もしユーザが ``/posts/view`` とリクエストしたら、 ``NotFoundException`` を送出し
+CakePHPのErrorHandlerに処理が引き継がれます。
+また、ユーザーが存在するレコードにアクセスしたことを確認するために同様のチェックを実行します。
 
 では、新しい「view」アクション用のビューを作って、
 ``/app/View/Posts/view.ctp``
 というファイルで保存しましょう。
 
-::
+.. code-block:: php
 
     <!-- File: /app/View/Posts/view.ctp -->
-    
-    <h1><?php echo $post['Post']['title']?></h1>
-    
-    <p><small>Created: <?php echo $post['Post']['created']?></small></p>
-    
-    <p><?php echo $post['Post']['body']?></p>
+
+    <h1><?php echo h($post['Post']['title']); ?></h1>
+
+    <p><small>Created: <?php echo $post['Post']['created']; ?></small></p>
+
+    <p><?php echo h($post['Post']['body']); ?></p>
 
 ``/posts/index`` の中にあるリンクをクリックしたり、手動で、 ``/posts/view/1`` にアクセスしたりして、動作することを確認してください。
 
@@ -231,14 +231,10 @@ http://www.example.com/posts/index
 データベースを読み、記事を表示できるようになりました。
 今度は、新しい投稿ができるようにしてみましょう。
 
-まず、PostsControllerの中に、 ``add()`` アクションを作ります:
+まず、PostsControllerの中に、 ``add()`` アクションを作ります::
 
-::
-
-    <?php
     class PostsController extends AppController {
-        public $name = 'Posts';
-        public $helpers = array('Html', 'Form');
+        public $helpers = array('Html', 'Form', 'Session');
         public $components = array('Session');
 
         public function index() {
@@ -246,13 +242,20 @@ http://www.example.com/posts/index
         }
 
         public function view($id) {
-            $this->Post->id = $id;
-            $this->set('post', $this->Post->read());
+            if (!$id) {
+                throw new NotFoundException(__('Invalid post'));
+            }
 
+            $post = $this->Post->findById($id);
+            if (!$post) {
+                throw new NotFoundException(__('Invalid post'));
+            }
+            $this->set('post', $post);
         }
 
         public function add() {
             if ($this->request->is('post')) {
+                $this->Post->create();
                 if ($this->Post->save($this->request->data)) {
                     $this->Session->setFlash('Your post has been saved.');
                     $this->redirect(array('action' => 'index'));
@@ -273,6 +276,11 @@ http://www.example.com/posts/index
 何らかの理由で保存できなかった場合には、単にビューを表示します。
 この時に、ユーザバリデーションエラーやその他の警告が表示されることになります。
 
+すべてのCakePHPのリクエストは ``CakeRequest`` オブジェクトに格納されており、\
+``$this->request`` でアクセスできます。リクエストオブジェクトには、\
+受信したリクエストに関するいろんな情報が含まれているので、アプリケーションのフローの制御に利用できます。\
+今回は、リクエストがHTTP POSTかどうかの確認に :php:meth:`CakeRequest::is()` メソッドを使用しています。
+
 ユーザがフォームを使ってデータをPOSTした場合、その情報は、 ``$this->request->data`` の中に入ってきます。
 :php:func:`pr()` や :php:func:`debug()` を使うと、内容を画面に表示させて、確認することができます。
 
@@ -280,7 +288,7 @@ SessionComponentの :php:meth:`SessionComponent::setFlash()` メソッドを使�
 レイアウトでは :php:func:`SessionHelper::flash` を用いて、メッセージを表示し、対応するセッション変数を削除します。
 コントローラの :php:meth:`Controller::redirect` 関数は別のURLにリダイレクトを行います。
 ``array('action' => 'index')`` パラメータは/posts、つまりpostsコントローラのindexアクションを表すURLに解釈されます。
-多くのcakeの関数で指定できるURLのフォーマットについては、APIの :php:func:`Router::url()` 関数を参考にすることができます。
+多くのCakeの関数で指定できるURLのフォーマットについては、 `API <http://api20.cakephp.org>`_ の :php:func:`Router::url()` 関数を参考にすることができます。
 
 ``save()`` メソッドを呼ぶと、バリデーションエラーがチェックされ、もしエラーがある場合には保存動作を中止します。
 これらのエラーがどのように扱われるのかは次のセクションで見てみましょう。
@@ -295,10 +303,12 @@ CakePHPを使うと、その作業を簡単、高速に片付けることがで�
 バリデーションの機能を活用するためには、ビューの中でCakeのFormHelperを使う必要があります。
 :php:class:`FormHelper` はデフォルトで、すべてのビューの中で ``$this->Form`` としてアクセスできるようになっています。
 
-addのビューは次のようなものになります::
+addのビューは次のようなものになります:
 
-    <!-- File: /app/View/Posts/add.ctp -->   
-        
+.. code-block:: php
+
+    <!-- File: /app/View/Posts/add.ctp -->
+
     <h1>Add Post</h1>
     <?php
     echo $this->Form->create('Post');
@@ -308,7 +318,9 @@ addのビューは次のようなものになります::
     ?>
 
 ここで、FormHelperを使って、HTMLフォームの開始タグを生成しています。
-``$this->Form->create()`` が生成したHTMLは次のようになります::
+``$this->Form->create()`` が生成したHTMLは次のようになります:
+
+.. code-block:: html
 
     <form id="PostAddForm" method="post" action="/posts/add">
 
@@ -330,16 +342,16 @@ addのビューは次のようなものになります::
 のビューで「Add Post」というリンクを新しく表示するように編集しましょう。
 ``<table>`` の前に、以下の行を追加してください::
 
-    <?php echo $this->Html->link('Add Post', array('controller' => 'posts', 'action' => 'add')); ?>
+    <?php echo $this->Html->link(
+        'Add Post',
+        array('controller' => 'posts', 'action' => 'add')
+    ); ?>
 
 バリデーション要件について、どうやってCakePHPに指示するのだろう、と思ったかもしれません。
 バリデーションのルールは、モデルの中で定義することができます。
 Postモデルを見直して、幾つか修正してみましょう::
 
-    <?php
     class Post extends AppModel {
-        public $name = 'Post';
-    
         public $validate = array(
             'title' => array(
                 'rule' => 'notEmpty'
@@ -368,12 +380,18 @@ CakePHPのバリデーションエンジンは強力で、組み込みのルー�
 アクションをつくり、それからビューを作る、というパターンです。
 PostsControllerの ``edit()`` アクションはこんな形になります::
 
-    <?php
-    function edit($id = null) {
-        $this->Post->id = $id;
-        if ($this->request->is('get')) {
-            $this->request->data = $this->Post->read();
-        } else {
+    public function edit($id = null) {
+        if (!$id) {
+            throw new NotFoundException(__('Invalid post'));
+        }
+
+        $post = $this->Post->findById($id);
+        if (!$post) {
+            throw new NotFoundException(__('Invalid post'));
+        }
+
+        if ($this->request->is('post') || $this->request->is('put')) {
+            $this->Post->id = $id;
             if ($this->Post->save($this->request->data)) {
                 $this->Session->setFlash('Your post has been updated.');
                 $this->redirect(array('action' => 'index'));
@@ -381,32 +399,44 @@ PostsControllerの ``edit()`` アクションはこんな形になります::
                 $this->Session->setFlash('Unable to update your post.');
             }
         }
+
+        if (!$this->request->data) {
+            $this->request->data = $post;
+        }
     }
 
-このアクションはまず、リクエストがGETであるかをチェックします。
-もしそうなら、投稿記事を見つけて(*find*)それをビューに渡します。
-リクエストがGETでないなら、おそらくPOSTデータを含んでいることでしょう。
-POSTデータを使ってデータを保存しようとし(またはバリデーションエラーをユーザに返し表示し)ます。
+このアクションではまず、ユーザが実在するレコードにアクセスしようとしていることを確認します。
+もし ``$id`` パラメータが渡されてないか、ポストが存在しない場合、
+``NotFoundException`` を送出してCakePHPのErrorHandlerに処理を委ねます。
 
-editビューは以下のようになります::
+次に、リクエストがPOSTであるかをチェックします。
+もしリクエストがPOSTなら、POSTデータでレコードを更新したり、バリデーションエラーを表示したりします。
+
+もし ``$this->request->data`` が空っぽだったら、取得していたポストレコードをそのままセットしておきます。
+
+editビューは以下のようになるでしょう:
+
+.. code-block:: php
 
     <!-- File: /app/View/Posts/edit.ctp -->
-        
+
     <h1>Edit Post</h1>
     <?php
-        echo $this->Form->create('Post', array('action' => 'edit'));
+        echo $this->Form->create('Post');
         echo $this->Form->input('title');
         echo $this->Form->input('body', array('rows' => '3'));
-        echo $this->Form->input('id', array('type' => 'hidden')); 
+        echo $this->Form->input('id', array('type' => 'hidden'));
         echo $this->Form->end('Save Post');
 
 （値が入力されている場合、）このビューは、編集フォームを出力します。
 必要であれば、バリデーションのエラーメッセージも表示します。
 
-ひとつ注意： 　CakePHPは、「id」フィールドがデータ配列の中に存在している場合は、モデルを編集しているのだと判断します。
+ひとつ注意： CakePHPは、「id」フィールドがデータ配列の中に存在している場合は、モデルを編集しているのだと判断します。
 もし、「id」がなければ、(addのビューを復習してください) ``save()`` が呼び出された時、Cakeは新しいモデルの挿入だと判断します。
 
-これで、特定の記事をアップデートするためのリンクをindexビューに付けることができます::
+これで、特定の記事をアップデートするためのリンクをindexビューに付けることができます:
+
+.. code-block:: php
 
     <!-- File: /app/View/Posts/index.ctp  (編集リンクを追加済み) -->
 
@@ -426,10 +456,10 @@ editビューは以下のようになります::
         <tr>
             <td><?php echo $post['Post']['id']; ?></td>
             <td>
-                <?php echo $this->Html->link($post['Post']['title'], array('action' => 'view', $post['Post']['id']));?>
+                <?php echo $this->Html->link($post['Post']['title'], array('action' => 'view', $post['Post']['id'])); ?>
             </td>
             <td>
-                <?php echo $this->Html->link('Edit', array('action' => 'edit', $post['Post']['id']));?>
+                <?php echo $this->Html->link('Edit', array('action' => 'edit', $post['Post']['id'])); ?>
             </td>
             <td>
                 <?php echo $post['Post']['created']; ?>
@@ -445,11 +475,11 @@ editビューは以下のようになります::
 次に、ユーザが投稿記事を削除できるようにする機能を作りましょう。
 PostsControllerの ``delete()`` アクションを作るところから始めます::
 
-    <?php
-    function delete($id) {
+    public function delete($id) {
         if ($this->request->is('get')) {
             throw new MethodNotAllowedException();
         }
+
         if ($this->Post->delete($id)) {
             $this->Session->setFlash('The post with id: ' . $id . ' has been deleted.');
             $this->redirect(array('action' => 'index'));
@@ -464,22 +494,24 @@ PostsControllerの ``delete()`` アクションを作るところから始めま
 多くの組み込み :doc:`/development/exceptions` があり、アプリケーションが生成することを必要とするであろう様々なHTTPエラーを指し示すのに使われます。
 
 ロジックを実行してリダイレクトするので、このアクションにはビューがありません。
-しかし、indexビューにリンクを付けて、投稿を削除するようにできるでしょう::
+しかし、indexビューにリンクを付けて、投稿を削除するようにできるでしょう:
+
+.. code-block:: php
 
     <!-- File: /app/View/Posts/index.ctp -->
-    
+
     <h1>Blog posts</h1>
     <p><?php echo $this->Html->link('Add Post', array('action' => 'add')); ?></p>
     <table>
         <tr>
             <th>Id</th>
             <th>Title</th>
-                    <th>Actions</th>
+            <th>Actions</th>
             <th>Created</th>
         </tr>
-    
+
     <!-- ここで$posts配列をループして、投稿情報を表示 -->
-    
+
         <?php foreach ($posts as $post): ?>
         <tr>
             <td><?php echo $post['Post']['id']; ?></td>
@@ -488,18 +520,18 @@ PostsControllerの ``delete()`` アクションを作るところから始めま
             </td>
             <td>
                 <?php echo $this->Form->postLink(
-                    'Delete', 
+                    'Delete',
                     array('action' => 'delete', $post['Post']['id']),
-                    array('confirm' => 'Are you sure?')); 
+                    array('confirm' => 'Are you sure?'));
                 ?>
-                <?php echo $this->Html->link('Edit', array('action' => 'edit', $post['Post']['id']));?>
+                <?php echo $this->Html->link('Edit', array('action' => 'edit', $post['Post']['id'])); ?>
             </td>
             <td>
                 <?php echo $post['Post']['created']; ?>
             </td>
         </tr>
         <?php endforeach; ?>
-    
+
     </table>
 
 :php:meth:`~FormHelper::postLink()` を使うと、投稿記事の削除を行うPOSTリクエストをするためのJavascriptを使うリンクが生成されます。
@@ -526,13 +558,11 @@ Cakeのルーティングは、 ``/app/Config/routes.php`` の中にあります
 デフォルトのトップページのルートをコメントアウトするか、削除します。
 この行です::
 
-    <?php
     Router::connect('/', array('controller' => 'pages', 'action' => 'display', 'home'));
 
 この行は、「/」というURLをデフォルトのCakePHPのホームページに接続します。
 これを、自分のコントローラに接続させるために、次のような行を追加してください::
 
-    <?php
     Router::connect('/', array('controller' => 'posts', 'action' => 'index'));
 
 これで、「/」でリクエストしてきたユーザを、PostControllerのindex()アクションに接続させることができます。
@@ -558,7 +588,7 @@ CakePHPには、もっともっと *多くの* 機能があります。
 マニュアルの残りの部分をガイドとして使い、もっと機能豊かなアプリケーションを作成してください。
 
 基本的なアプリケーションの作成が終わったので、現実世界のアプリを作る準備が整いました。
-自分のプロジェクトを始めて、 `マニュアル </>`_ の残りと `API <http://api20.cakephp.org>`_ を使いましょう。
+自分のプロジェクトを始めて、 :doc:`Cookbook </index>` の残りと `API <http://api20.cakephp.org>`_ を使いましょう。
 
 助けが必要なら、#cakephpに来てください（ただし英語。日本語なら、cakephp.jpへどうぞ）。
 CakePHPにようこそ！
@@ -573,5 +603,3 @@ CakePHPを学習する人が次に学びたいと思う共通のタスクがい�
 3. :doc:`/controllers/scaffolding`: コードを作成する前のプロトタイピング
 4. :doc:`/console-and-shells/code-generation-with-bake` 基本的なCRUDコードの生成
 5. :doc:`/tutorials-and-examples/blog-auth-example/auth`: ユーザの認証と承認のチュートリアル
-
-

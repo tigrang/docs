@@ -16,7 +16,6 @@ Loading and unloading objects
 Loading objects on every kind of collection can be done using the ``load()``
 method::
 
-    <?php
     $this->Prg = $this->Components->load('Prg');
     $this->Prg->process();
 
@@ -25,7 +24,6 @@ collection, a new instance will be created.  If the component is already loaded,
 another instance will not be created.  When loading components, you can also
 provide additional configuration for them::
 
-    <?php
     $this->Cookie = $this->Components->load('Cookie', array('name' => 'sweet'));
 
 Any keys & values provided will be passed to the Component's constructor.  The
@@ -34,14 +32,12 @@ used to alias objects in a collection.  This allows you to have component names
 that do not reflect the classnames, which can be helpful when extending core
 components::
 
-    <?php
     $this->Auth = $this->Components->load('Auth', array('className' => 'MyCustomAuth'));
     $this->Auth->user(); // Actually using MyCustomAuth::user();
 
 The inverse of loading an object, is unloading it.  Unloaded objects are removed
 from memory, and will not have additional callbacks triggered on them::
 
-    <?php
     $this->Components->unload('Cookie');
     $this->Cookie->read(); // Fatal error.
 
@@ -52,11 +48,10 @@ Callbacks are supported by collection objects.  When a collection has a callback
 triggered, that method will be called on all enabled objects in the collection.
 You can pass parameters to the callback loop as well::
 
-    <?php
     $this->Behaviors->trigger('afterFind', array($this, $results, $primary));
 
-In the above ``$viewFile`` would be passed as the first argument to every
-helper's beforeRender method. There are several options that can be used to
+In the above ``$this`` would be passed as the first argument to every
+behavior's afterFind method. There are several options that can be used to
 control how callbacks are fired:
 
 - ``breakOn`` Set to the value or values you want the callback propagation to stop on.
@@ -83,15 +78,14 @@ Canceling a callback loop
 Using the ``break`` and ``breakOn`` options you can cancel a callback loop
 midway similar to stopping event propagation in JavaScript::
 
-    <?php
     $this->Behaviors->trigger(
         'beforeFind', 
         array($this, $query), 
-        array('break' => true, 'breakOn' => false
-    ));
+        array('break' => true, 'breakOn' => false)
+    );
 
 In the above example, if any behavior returns ``false`` from its beforeFind
-method, no further callbacks will be called. In addition the return of
+method, no further callbacks will be called. In addition, the return of
 ``trigger()`` will be false.
 
 Enabling and disabling objects
@@ -101,7 +95,6 @@ Once an object is loaded into a collection you may need to disable it.
 Disabling an object in a collection prevents future callbacks from being fired
 on that object unless the ``triggerDisabled`` option is used::
 
-    <?php
     // Disable the HtmlHelper
     $this->Helpers->disable('Html');
     
@@ -114,15 +107,56 @@ primary difference between an enabled and disabled object is with regards to
 callbacks. You can interrogate a collection about the enabled objects, or check
 if a specific object is still enabled using ``enabled()``::
 
-    <?php
     // Check whether or not a specific helper is enabled.
     $this->Helpers->enabled('Html');
 
     // $enabled will contain an array of helper currently enabled.
     $enabled = $this->Helpers->enabled();
 
+Object callback priorities
+==============================
+
+You can prioritize the triggering object callbacks similar to event callbacks.
+The handling of priority values and order of triggering is the same as
+explained :ref:`here <event-priorities>`.
+Here's how you can specify priority at declaration time::
+
+    class SomeController {
+        public $components = array(
+            'Foo', //Foo gets default priority 10
+            'Bar' => array('priority' => 9) //Bar's callbacks are triggered before Foo's    
+        );
+
+	public $helpers = array(
+            'Cache' => array('priority' => 12), //Cache's callbacks will be triggered last 
+            'Asset',
+            'Utility' //Utility has priority 10 same as Asset and its callbacks are trigger
+                      //after Asset's
+        );
+    }
+
+
+    class Post {
+        public $actsAs = array(
+            'DoFirst' => array('priority' => 1),
+            'Media'
+        );
+    }
+
+When dynamically loading objects to a collection you can specify the priority like this::
+
+    $this->MyComponent = $this->Components->load('MyComponent', array('priority' => 9));
+
+
+You can also change priorities at run time using the ``ObjectCollection::setPriority()`` function::
+
+    //For a single object
+    $this->Components->setPriority('Foo', 2);
+
+    //For multiple objects
+    $this->Behaviors->setPriority(array('Object1' => 8, 'Object2' => 9));
 
 
 .. meta::
     :title lang=en: Collections
-    :keywords lang=en: array name,loading components,several different kinds,unified api,loading objects,component names,special key,core components,callbacks,prg,callback,alias,fatal error,collections,memory
+    :keywords lang=en: array name,loading components,several different kinds,unified api,loading objects,component names,special key,core components,callbacks,prg,callback,alias,fatal error,collections,memory,priority,priorities

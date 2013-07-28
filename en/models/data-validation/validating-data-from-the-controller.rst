@@ -8,20 +8,14 @@ information to the user before actually saving the data to the
 database. Validating data requires a slightly different process
 than just saving the data.
 
-First, set the data to the model:
+First, set the data to the model::
 
-::
-
-    <?php
     $this->ModelName->set($this->request->data);
 
 Then, to check if the data validates, use the validates method of
 the model, which will return true if it validates and false if it
-doesn't:
+doesn't::
 
-::
-
-    <?php
     if ($this->ModelName->validates()) {
         // it validated logic
     } else {
@@ -35,11 +29,8 @@ User model with fields for first\_name, last\_name, email and
 password. In this instance when creating or editing a user you
 would want to validate all 4 field rules. Yet when a user logs in
 you would validate just email and password rules. To do this you
-can pass an options array specifying the fields to validate. e.g.
+can pass an options array specifying the fields to validate::
 
-::
-
-    <?php
     if ($this->User->validates(array('fieldList' => array('email', 'password')))) {
         // valid
     } else {
@@ -48,11 +39,8 @@ can pass an options array specifying the fields to validate. e.g.
 
 The validates method invokes the invalidFields method which
 populates the validationErrors property of the model. The
-invalidFields method also returns that data as the result.
+invalidFields method also returns that data as the result::
 
-::
-
-    <?php
     $errors = $this->ModelName->invalidFields(); // contains validationErrors array
 
 The validation errors list is not cleared between successive calls to ``invalidFields()``
@@ -68,11 +56,8 @@ calling save as save will automatically validate the data before
 actually saving.
 
 To validate multiple models, the following approach should be
-used:
+used::
 
-::
-
-    <?php
     if ($this->ModelName->saveAll($this->request->data, array('validate' => 'only'))) {
       // validates
     } else {
@@ -80,11 +65,8 @@ used:
     }
 
 If you have validated data before save, you can turn off validation
-to avoid second check.
+to avoid second check::
 
-::
-
-    <?php
     if ($this->ModelName->saveAll($this->request->data, array('validate' => false))) {
         // saving without validation
     } 

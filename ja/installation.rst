@@ -9,10 +9,10 @@ CakePHP は素早く簡単にインストールできます。
 システム要件
 ============
 
--  HTTPサーバー。例: Apache。mod\_rewriteが推奨されますが、必要ではありません。
+-  HTTPサーバー。例: Apache。mod\_rewriteが推奨されますが、必須ではありません。
 -  PHP 5.2.8以上。
 
-技術的にはデータベースエンジンは必要ではありませんが、ほとんどのアプリケーションはこれを活用することが想像できます。
+技術的にはデータベースエンジンは必ずしも必要ではありませんが、ほとんどのアプリケーションはこれを活用することが想像できます。
 CakePHPは種々のデータベース・ストレージのエンジンをサポートしています：
 
 -  MySQL (4以上)
@@ -23,12 +23,12 @@ CakePHPは種々のデータベース・ストレージのエンジンをサポ�
 .. note::
 
     組み込みのドライバは全てPDOを必要とします。
-    正しいPDO拡張がインストールされているか必ず確かめてください。
+    正しいPDO拡張モジュールがインストールされているか必ず確かめてください。
 
 ライセンス
 ==========
 
-CakePHPはMITライセンスの元にライセンスされています。
+CakePHPはMIT Licenseの元にライセンスされています。
 これは著作権(*copyright*)の提示が全く改変されていない状態で残されているという条件の元で、ソースコードを自由に更新、配布、再公開できることを意味します。
 また、自由にCakePHPを宣伝やクローズソースのアプリケーションに組み込むこともできます。
 
@@ -38,11 +38,11 @@ CakePHPのダウンロード
 CakePHP の最新版を手に入れるには、主に二つの方法があります。
 ウェブサイトからアーカイブ(zip/tar.gz/tar.bz2)としてダウンロードする、あるいは git リポジトリからコードをチェックアウトする方法のいずれかにより取得できます。
 
-最新のアーカイブをダウンロードするには、 `http://www.cakephp.org <http://www.cakephp.org>`_ のウェブサイトに行き、"Download Now!" という大きなリンクに従って進みます。
+最新のアーカイブをダウンロードするには、 `http://cakephp.org <http://cakephp.org>`_ のウェブサイトに行き、"Download Now!" という大きなリンクに従って進みます。
 
 CakePHP の最新のリリースは `Github <http://github.com/cakephp/cakephp>`_ でホスティングされています。
 GithubにはCakePHP自身、また多くのCakePHPプラグインが含まれています。
-CakePHPのリリースは `Github downloads <http://github.com/cakephp/cakephp/downloads>`_ で入手できます。
+CakePHPのリリースは `Github tags <https://github.com/cakephp/cakephp/tags>`_ で入手できます。
 
 他の手段を用いて、バグ修正や日ごとに行われる細かな機能追加が含まれた、できたてホヤホヤのコードを手に入れることができます。
 これらは `Github`_ からレポジトリを複製することでアクセスすることができます::
@@ -80,23 +80,47 @@ CakePHPのインストールは、Webサーバのドキュメントルートに�
 Cake のアーカイブを ``/var/www/html`` に展開してください。
 ドキュメントルートに、ダウンロードしたリリースの名前がついたフォルダ(例えば cake\_2.0.0)が取得できます。
 このフォルダを cake\_2\_0 という名前にリネームしてください。
-ファイルシステム上の開発用の設定は次のようになります:
+ファイルシステム上の開発用の設定は次のようになります::
 
-
--  /var/www/html
-
-  -  /cake\_2\_0
-
-     -  /app
-     -  /lib
-     -  /vendors
-     -  /plugins
-     -  /.htaccess
-     -  /index.php
-     -  /README
-
+    /var/www/html/
+        cake_2_0/
+            app/
+            lib/
+            plugins/
+            vendors/
+            .htaccess
+            index.php
+            README
 
 もしウェブサーバが適切に設定されていれば、 http://www.example.com/cake\_2\_0/ で Cake アプリケーションがアクセス可能になっているはずです。
+
+複数のアプリケーションから一つのCakePHPを使用する
+-------------------------------------------------
+
+多数のアプリケーションを開発している場合、\
+それらがCakePHPのコアファイルを共有するのは理にかなっているといえます。\
+そのようにするには、いくつか方法があります。いちばん簡単なのが、PHPの ``include_path`` を使う方法です。\
+そのためにまずは、CakePHPを適当なディレクトリに複製します。この例では
+``~/projects`` ディレクトリにします。 ::
+
+    git clone git://github.com/cakephp/cakephp.git ~/projects/cakephp
+
+このコマンドを実行すると、CakePHPのファイルが ``~/projects`` ディレクトリの中に複製されます。\
+gitを使用したくない場合は、zip形式でのダウンロードも可能で、残りの手順も同じです。\
+次は、 ``php.ini`` を探して編集する必要があります。\*nix系のシステムならたいていは
+``/etc/php.ini`` にあります。もしくは ``php -i`` コマンドを実行して 'Loaded Configuration File' を確認してください。\
+iniファイルを見つけたら、 ``include_path`` の設定を変更して ``~/projects/cakephp/lib`` が含まれるようにしてください。\
+例としては次のようになります。 ::
+
+    include_path = .:/home/mark/projects/cakephp/lib:/usr/local/php/lib/php
+
+Webサーバを再起動した後、 ``phpinfo()`` で変更が反映されているのを確認してください。
+
+.. note::
+
+    windowsでは、インクルードパスの区切りは : ではなく ; になります。
+
+``include_path`` の設定が完了したので、アプリケーションはCakePHPのファイルを見つけられるようになりました。
 
 運用(*Production*)
 ==================
@@ -108,21 +132,17 @@ Cake のアーカイブを ``/var/www/html`` に展開してください。
 
 Cake のアーカイブを好きなディレクトリに展開してください。
 この例において、Cake をインストールすると決めたディレクトリは /cake\_install であると仮定します。
-ファイルシステム上の運用向けの設定は次のようになります:
+ファイルシステム上の運用向けの設定は次のようになります::
 
-
--  /cake\_install/
-   
-   -  /app
-      
-      -  /webroot (このディレクトリを ``DocumentRoot`` ディレクティブとしてセットします)
-
-   -  /lib
-   -  /vendors
-   -  /.htaccess
-   -  /index.php
-   -  /README
-
+    /cake_install/
+        app/
+            webroot/ (このディレクトリを ``DocumentRoot`` ディレクティブとしてセットします)
+        lib/
+        plugins/
+        vendors/
+        .htaccess
+        index.php
+        README
 
 Apache を使用する場合は、そのドメインの ``DocumentRoot`` ディレクティブを次のように設定してください::
 
@@ -130,12 +150,13 @@ Apache を使用する場合は、そのドメインの ``DocumentRoot`` ディ�
 
 もしウェブサーバが適切に設定されていれば、 http://www.example.com で Cake アプリケーションがアクセス可能になっているはずです。
 
-応用インストールとサーバー固有の設定
-====================================
+応用インストールと URL リライティング
+=====================================
 
 .. toctree::
 
-   installation/advanced-installation
+    installation/advanced-installation
+    installation/url-rewriting
 
 動作確認
 ========
@@ -151,9 +172,8 @@ Apache を使用する場合は、そのドメインの ``DocumentRoot`` ディ�
 動きませんか？
 もしPHPのタイムゾーンに関連するエラーが出るなら、 ``app/Config/core.php`` の中のとある一行のコメントを外してください::
 
-   <?php
    /**
-    * If you are on PHP 5.3 uncomment this line and correct your server timezone
-    * to fix the date & time related errors.
+    * Uncomment this line and correct your server timezone to fix 
+    * any date & time related errors.
     */
        date_default_timezone_set('UTC');

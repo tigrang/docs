@@ -1,6 +1,13 @@
 Simple Acl controlled Application
 #################################
 
+.. note::
+
+    This isn't a beginner level tutorial. If you are just starting out with
+    CakePHP we would advice you to get a better overall experience of the
+    framework's features before trying out this tutorial.
+
+
 In this tutorial you will create a simple application with
 :doc:`/core-libraries/components/authentication` and
 :doc:`/core-libraries/components/access-control-lists`. This
@@ -31,7 +38,7 @@ Preparing our Application
 First, let's get a copy of fresh Cake code.
 
 To get a fresh download, visit the CakePHP project at GitHub:
-http://github.com/cakephp/cakephp/downloads and download the stable
+https://github.com/cakephp/cakephp/tags and download the stable
 release. For this tutorial you need the latest 2.0 release.
 
 
@@ -117,17 +124,16 @@ other pieces that need to be added before we can add the Auth and
 Acl components. First add a login and logout action to your
 ``UsersController``::
 
-    <?php
     public function login() {
         if ($this->request->is('post')) {
             if ($this->Auth->login()) {
                 $this->redirect($this->Auth->redirect());
             } else {
-                $this->Session->setFlash('Your username or password was incorrect.');
+                $this->Session->setFlash(__('Your username or password was incorrect.'));
             }
         }
     }
-     
+
     public function logout() {
         //Leave empty for now.
     }
@@ -135,7 +141,6 @@ Acl components. First add a login and logout action to your
 Then create the following view file for login at
 ``app/View/Users/login.ctp``::
 
-    <?php
     echo $this->Form->create('User', array('action' => 'login'));
     echo $this->Form->inputs(array(
         'legend' => __('Login'),
@@ -149,12 +154,11 @@ the database.  Storing plaintext passwords is extremely insecure and
 AuthComponent will expect that your passwords are hashed.  In
 ``app/Model/User.php`` add the following::
 
-    <?php
     App::uses('AuthComponent', 'Controller/Component');
     class User extends AppModel {
         // other code.
 
-        public function beforeSave() {
+        public function beforeSave($options = array()) {
             $this->data['User']['password'] = AuthComponent::password($this->data['User']['password']);
             return true;
         }
@@ -166,7 +170,6 @@ this goes in /app/Controller/, not /app/app_controllers.php. Since we want our e
 site controlled with Auth and Acl, we will set them up in
 ``AppController``::
 
-    <?php
     class AppController extends Controller {
         public $components = array(
             'Acl',
@@ -178,7 +181,7 @@ site controlled with Auth and Acl, we will set them up in
             'Session'
         );
         public $helpers = array('Html', 'Form', 'Session');
-    
+
         public function beforeFilter() {
             //Configure AuthComponent
             $this->Auth->loginAction = array('controller' => 'users', 'action' => 'login');
@@ -194,10 +197,14 @@ exceptions so :php:class:`AuthComponent` will allow us to create some groups
 and users. In **both** your ``GroupsController`` and your
 ``UsersController`` Add the following::
 
-    <?php
     public function beforeFilter() {
-        parent::beforeFilter(); 
+        parent::beforeFilter();
+
+        // For CakePHP 2.0
         $this->Auth->allow('*');
+
+        // For CakePHP 2.1 and up
+        $this->Auth->allow();
     }
 
 These statements tell AuthComponent to allow public access to all
@@ -239,12 +246,10 @@ automagic connection of models with the Acl tables. Its use
 requires an implementation of ``parentNode()`` on your model. In
 our ``User`` model we will add the following::
 
-    <?php
-    class User extends Model {
-        public $name = 'User';
+    class User extends AppModel {
         public $belongsTo = array('Group');
         public $actsAs = array('Acl' => array('type' => 'requester'));
-         
+
         public function parentNode() {
             if (!$this->id && empty($this->data)) {
                 return null;
@@ -264,10 +269,9 @@ our ``User`` model we will add the following::
 
 Then in our ``Group`` Model Add the following::
 
-    <?php
-    class Group extends Model {
+    class Group extends AppModel {
         public $actsAs = array('Acl' => array('type' => 'requester'));
-         
+
         public function parentNode() {
             return null;
         }
@@ -318,7 +322,6 @@ Group-only ACL
 In case we want simplified per-group only permissions, we need to
 implement ``bindNode()`` in ``User`` model::
 
-    <?php
     public function bindNode($user) {
         return array('model' => 'Group', 'foreign_key' => $user['User']['group_id']);
     }
@@ -359,7 +362,6 @@ Creating Acos from the shell looks like::
 
 While using the AclComponent would look like::
 
-    <?php
     $this->Acl->Aco->create(array('parent_id' => null, 'alias' => 'controllers'));
     $this->Acl->Aco->save();
 
@@ -373,7 +375,18 @@ a small modification to our ``AuthComponent`` configuration.
 ``AuthComponent`` needs to know about the existence of this root
 node, so that when making ACL checks it can use the correct node
 path when looking up controllers/actions. In ``AppController`` ensure
-that you ``$components`` array contains the ``actionPath`` defined earlier.
+that your ``$components`` array contains the ``actionPath`` defined earlier::
+
+    class AppController extends Controller {
+        public $components = array(
+            'Acl',
+            'Auth' => array(
+                'authorize' => array(
+                    'Actions' => array('actionPath' => 'controllers')
+                )
+            ),
+            'Session'
+        );
 
 Continue to :doc:`part-two` to continue the tutorial.
 

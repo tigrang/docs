@@ -37,7 +37,7 @@ Descargar CakePHP
 Vamos a descargar la última versión de CakePHP.
 
 Para ello, visita la web del proyecto en github:
-`http://github.com/cakephp/cakephp/downloads <http://github.com/cakephp/cakephp/downloads>`_ 
+`https://github.com/cakephp/cakephp/tags <https://github.com/cakephp/cakephp/tags>`_ 
 y descargar / descomprimir la última versión de la rama 2.0
 
 También puedes clonar el repositorio usando 
@@ -170,12 +170,10 @@ vete a la línea 203 del fichero ``/app/Config/core.php`` y verás algo así:
 
 ::
 
-    <?php
     /**
      * A random string used in security hashing methods.
      */
     Configure::write('Security.salt', 'pl345e-P45s_7h3*S@l7!');
-    ?>
 
 El número semilla se utiliza para encriptar y desencriptar cadenas. Cambia el
 valor por defecto en el ficharo ``/app/Config/core.php`` línea 208. No importa
@@ -183,12 +181,10 @@ qué numero pongas, que sea difícil de adivinar.
 
 ::
 
-    <?php
     /**
      * A random numeric string (digits only) used to encrypt/decrypt strings.
      */
     Configure::write('Security.cipherSeed', '7485712659625147843639846751');
-    ?>
 
 Para dar permisos al directorio ``app/Tmp``, la mejor forma es ver qué usuario
 está ejecutando el servidor web (``<?php echo `whoami`; ?>``) y cambiar el
@@ -250,7 +246,6 @@ Si no puedes (o no quieres) configurar mod\_rewrite o algún otro módulo
 compatible, necesitarás activar las url amigables en CakePHP. En el fichero
 ``/app/Config/core.php``, quita el comentario a la línea::
 
-    <?php
     Configure::write('App.baseUrl', env('SCRIPT_NAME'));
 
 Borra también los ficheros .htaccess que ya no serán necesarios::

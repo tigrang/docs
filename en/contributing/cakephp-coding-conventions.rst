@@ -6,6 +6,10 @@ Cake Developers will use the following coding standards.
 It is recommended that others developing CakeIngredients follow the same
 standards.
 
+You can use the `CakePHP Code Sniffer
+<https://github.com/cakephp/cakephp-codesniffer>`_ to check that your code
+follows required standards.
+
 Adding new features
 ===================
 
@@ -19,7 +23,6 @@ One tab will be used for indentation.
 
 So, indentation should look like this::
 
-    <?php
     // base level
         // level 1
             // level 2
@@ -28,13 +31,12 @@ So, indentation should look like this::
 
 Or::
 
-    <?php
     $booleanVariable = true;
-    $stringVariable = "moose";
+    $stringVariable = 'moose';
     if ($booleanVariable) {
-        echo "Boolean value is true";
-        if ($stringVariable == "moose") {
-            echo "We have encountered a moose";
+        echo 'Boolean value is true';
+        if ($stringVariable === 'moose') {
+            echo 'We have encountered a moose';
         }
     }
 
@@ -44,14 +46,13 @@ Control Structures
 Control structures are for example "``if``", "``for``", "``foreach``",
 "``while``", "``switch``" etc. Below, an example with "``if``"::
 
-    <?php 
-    if ((expr_1) || (expr_2)) { 
+    if ((expr_1) || (expr_2)) {
         // action_1;
     } elseif (!(expr_3) && (expr_4)) {
-        // action_2; 
+        // action_2;
     } else {
-        // default_action; 
-    } 
+        // default_action;
+    }
 
 *  In the control structures there should be 1 (one) space before the
    first parenthesis and 1 (one) space between the last parenthesis and
@@ -65,19 +66,30 @@ Control structures are for example "``if``", "``for``", "``foreach``",
    structure. The statement included in curly brackets should begin on a
    new line, and code contained within it should gain a new level of
    indentation.
+*  Inline assignments should not be used inside of the control structures.
 
 ::
 
-    <?php 
     // wrong = no brackets, badly placed statement
-    if (expr) statement; 
+    if (expr) statement;
 
     // wrong = no brackets
-    if (expr) 
-        statement; 
+    if (expr)
+        statement;
 
     // good
     if (expr) {
+        statement;
+    }
+
+    // wrong = inline assignment
+    if ($variable = Class::function()) {
+        statement;
+    }
+
+    // good
+    $variable = Class::function();
+    if ($variable) {
         statement;
     }
 
@@ -90,12 +102,31 @@ statements. Ternary operators should not ever be nested. Optionally
 parentheses can be used around the condition check of the ternary for
 clarity::
 
-    <?php
     //Good, simple and readable
     $variable = isset($options['variable']) ? $options['variable'] : true;
 
     //Nested ternaries are bad
     $variable = isset($options['variable']) ? isset($options['othervar']) ? true : false : false;
+
+
+View files
+----------
+
+In view files (.ctp files) developers should use keyword control structures.
+Keyword control structures are easier to read in complex view files. Control
+structures can either be contained in a larger PHP block, or in separate PHP
+tags::
+
+    <?php
+    if ($isAdmin):
+        echo '<p>You are the admin user.</p>';
+    endif;
+    ?>
+    <p>The following is also acceptable:</p>
+    <?php if ($isAdmin): ?>
+        <p>You are the admin user.</p>
+    <?php endif; ?>
+
 
 Function Calls
 ==============
@@ -104,8 +135,7 @@ Functions should be called without space between function's name and
 starting bracket. There should be one space between every parameter of a
 function call::
 
-    <?php 
-    $var = foo($bar, $bar2, $bar3); 
+    $var = foo($bar, $bar2, $bar3);
 
 As you can see above there should be one space on both sides of equals
 sign (=).
@@ -115,7 +145,6 @@ Method definition
 
 Example of a function definition::
 
-    <?php 
     function someFunction($arg1, $arg2 = '') {
         if (expr) {
             statement;
@@ -128,8 +157,7 @@ definition. Try to make your functions return something, at least true
 or false = so it can be determined whether the function call was
 successful::
 
-    <?php 
-    function connection($dns, $persistent = false) {
+    public function connection($dns, $persistent = false) {
         if (is_array($dns)) {
             $dnsInfo = $dns;
         } else {
@@ -169,7 +197,6 @@ tags:
 PhpDoc tags are very much like JavaDoc tags in Java. Tags are only
 processed if they are the first thing in a DocBlock line, for example::
 
-    <?php
     /**
      * Tag example.
      * @author this tag is parsed, but this @version is ignored
@@ -178,7 +205,6 @@ processed if they are the first thing in a DocBlock line, for example::
 
 ::
 
-    <?php 
     /**
      * Example of inline phpDoc tags.
      *
@@ -186,7 +212,7 @@ processed if they are the first thing in a DocBlock line, for example::
      */
     function bar() {
     }
-     
+
     /**
      * Foo function
      */
@@ -215,7 +241,6 @@ Functions
 
 Write all functions in camelBack::
 
-    <?php
     function longFunctionName() {
     }
 
@@ -224,7 +249,6 @@ Classes
 
 Class names should be written in CamelCase, for example::
 
-    <?php
     class ExampleClass {
     }
 
@@ -237,7 +261,6 @@ should be written in camelBack in case of multiple words. Variables
 containing objects should start with a capital letter, and in some way
 associate to the class the variable is an object of. Example::
 
-    <?php
     $user = 'John';
     $users = array('John', 'Hans', 'Arne');
 
@@ -249,7 +272,6 @@ Member visibility
 Use PHP5's private and protected keywords for methods and variables.  Additionally,
 protected method or variable names start with a single underscore ("\_"). Example::
 
-    <?php
     class A {
         protected $_iAmAProtectedVariable;
 
@@ -260,7 +282,6 @@ protected method or variable names start with a single underscore ("\_"). Exampl
 
 Private methods or variable names start with double underscore ("\_\_"). Example::
 
-    <?php
     class A {
         private $__iAmAPrivateVariable;
 
@@ -269,13 +290,16 @@ Private methods or variable names start with double underscore ("\_\_"). Example
         }
     }
 
+Try to avoid private methods or variables, though, in favor of protected ones.
+The latter can be accessed or modified by subclasses, whereas private ones
+prevent extension or re-use. Private visibility also makes testing much more difficult.
+
 Method Chaining
 ---------------
 
 Method chaining should have multiple methods spread across separate lines, and
 indented with one tab::
 
-    <?php
     $email->from('foo@example.com')
         ->to('bar@example.com')
         ->subject('A great message')
@@ -320,7 +344,7 @@ float
 boolean
     Logical type (true or false).
 string
-    String type (any value in "" or ' ').
+    String type (any value in " " or ' ').
 array
     Array type.
 object
@@ -337,7 +361,6 @@ Constants should be defined in capital letters:
 
 ::
 
-    <?php
     define('CONSTANT', 1);
 
 If a constant name consists of multiple words, they should be separated
@@ -345,7 +368,6 @@ by an underscore character, for example:
 
 ::
 
-    <?php
     define('LONG_NAMED_CONSTANT', 2);
 
 

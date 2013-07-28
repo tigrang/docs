@@ -3,6 +3,23 @@
 
 付録は2.0で導入された新機能に関する情報と、1.3から2.0への移行の道程を含みます。
 
+2.2移行ガイド
+=============
+
+.. toctree::
+    :maxdepth: 1
+
+    appendices/2-2-migration-guide
+
+2.1移行ガイド
+=============
+
+.. toctree::
+    :maxdepth: 1
+
+    appendices/2-1-migration-guide
+    appendices/new-features-in-cakephp-2-1
+
 2.0移行ガイド
 =============
 
@@ -27,6 +44,6 @@
 
 .. toctree::
     :maxdepth: 1
-    
+
     appendices/cakephp-development-process
     appendices/glossary

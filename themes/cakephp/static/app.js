@@ -3,6 +3,10 @@ if (/cakephp\.org/.test(document.domain)) {
 }
 
 App = {};
+App.config = {
+	url: 'http://search.cakephp.org/search',
+	version: '2-2'
+};
 
 App.Book = (function() {
 
@@ -15,31 +19,24 @@ App.Book = (function() {
 		$('#tablet-nav').bind('click', function (e) {
 			e.preventDefault();
 
-			// Squirt the nav into the modal.
+			// Squirt the nav and page contents into the modal.
 			var contents = $('#sidebar-navigation').html();
+			var localToc = $('.page-contents').html();
 			var modal = $('#nav-modal').html(contents);
+			modal.append(localToc);
 			modal.append('<a href="#" class="close-reveal-modal">&#215;</a>');
 			modal.reveal({
 				animation: 'fade'
 			});
 		});
 
-		// Display page contents
-		$('#page-contents-button').bind('click', function (e) {
-			e.preventDefault();
-			e.stopPropagation();
-			$('#page-contents').fadeIn('fast');
+		// Make dropdowns work with keyboard input.
+		var dropdown = $('.dropdown');
+		dropdown.find('> a').bind('focus', function () {
+			$(this).parents('.dropdown').find('ul').show();
 		});
-
-		var hideContents = function (e) {
-			$('#page-contents').fadeOut('fast');
-		};
-	
-		$(document).bind('click', hideContents);
-		$(document).bind('keyup', function (e) {
-			if (e.keyCode == 27) {
-				hideContents();
-			}
+		dropdown.find('li:last-child a').bind('blur', function () {
+			$(this).parents('.dropdown').find('ul').css('display', '');
 		});
 	}
  
@@ -49,7 +46,7 @@ App.Book = (function() {
  
 	return {
 		init : init
-	}
+	};
 })();
 
 // Inline search form, and standalone search form.
@@ -60,7 +57,6 @@ App.InlineSearch = (function () {
 	var searchResults;
 	var searchInput;
 	var doSearch;
-	var searchUrl = 'http://search.cakephp.org/search';
 
 	var delay = (function(){
 		var timer;
@@ -112,11 +108,11 @@ App.InlineSearch = (function () {
 	};
 
 	var executeSearch = function (value, searchResults, limit, page) {
-		var query = {lang: window.lang, q: value};
+		var query = {lang: window.lang, q: value, version: App.config.version};
 		if (page) {
 			query.page = page;
 		}
-		var url = searchUrl + '?' + jQuery.param(query);
+		var url = App.config.url + '?' + jQuery.param(query);
 		var xhr = $.ajax({
 			url: url,
 			dataType: 'json',
@@ -161,7 +157,7 @@ App.InlineSearch = (function () {
 	return {
 		init: init,
 		delay: delay,
-		searchUrl: searchUrl,
+		searchUrl: App.config.url,
 		createSearch: createSearch,
 		executeSearch: executeSearch
 	};

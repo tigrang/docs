@@ -22,7 +22,6 @@ CakePHP expects database configuration details to be in a file at
 be found at ``app/Config/database.php.default``. A finished
 configuration should look something like this::
 
-    <?php
     class DATABASE_CONFIG {
         public $default = array(
             'datasource'  => 'Database/Mysql',
@@ -45,8 +44,6 @@ setting ``public $useDbConfig = 'legacy';`` in the appropriate models.
 Fill out the key/value pairs in the configuration array to best
 suit your needs.
 
-Key
-    Value
 datasource
     The name of the datasource this configuration array is for.
     Examples: Database/Mysql, Database/Sqlserver, Database/Postgres, Database/Sqlite.
@@ -74,10 +71,26 @@ encoding
     hyphen.
 schema
     Used in PostgreSQL database setups to specify which schema to use.
-datasource
-    non-DBO datasource to use, e.g. 'ldap', 'twitter'
 unix_socket
-    Used by drivers that support it to connect via unix socket files.
+    Used by drivers that support it to connect via unix socket files. If you are
+    using postgres and want to use unix sockets, leave the host key blank.
+ssl_key
+    The file path to the SSL key file. (Only supported by MySQL, requires PHP
+    5.3.7+).
+ssl_cert
+    The file path to the SSL certificate file. (Only supported by MySQL,
+    requires PHP 5.3.7+).
+ssl_ca
+    The file path to the SSL certificate authority. (Only supported by MySQL,
+    requires PHP 5.3.7+).
+settings
+    An array of key/value pairs that should be sent to the database server as
+    ``SET`` commands when the connection is created. This option is only
+    supported by MySQL, Postgres, and SQLserver at this time.
+
+.. versionchanged:: 2.4
+    The ``settings``, ``ssl_key``, ``ssl_cert`` and ``ssl_ca`` keys 
+    was added in 2.4.
 
 .. note::
 
@@ -113,20 +126,25 @@ these additional classes into view.
 By using :php:meth:`App::build()` in bootstrap.php we can define additional
 paths where CakePHP will look for classes::
 
-    <?php
     App::build(array(
-        'plugins' => array('/full/path/to/plugins/', '/next/full/path/to/plugins/'),
-        'Model' =>  array('/full/path/to/models/', '/next/full/path/to/models/'),
-        'View' => array('/full/path/to/views/', '/next/full/path/to/views/'),
-        'Controller' => array('/full/path/to/controllers/', '/next/full/path/to/controllers/'),
-        'Model/Datasource' => array('/full/path/to/datasources/', '/next/full/path/to/datasources/'),
-        'Model/Behavior' => array('/full/path/to/behaviors/', '/next/full/path/to/behaviors/'),
-        'Controller/Component' => array('/full/path/to/components/', '/next/full/path/to/components/'),
-        'View/Helper' => array('/full/path/to/helpers/', '/next/full/path/to/helpers/'),
-        'vendors' => array('/full/path/to/vendors/', '/next/full/path/to/vendors/'),
-        'Console/Command' => array('/full/path/to/shells/', '/next/full/path/to/shells/'),
-        'locales' => array('/full/path/to/locale/', '/next/full/path/to/locale/'),
-        'libs' => array('/full/path/to/libs/', '/next/full/path/to/libs/')
+        'Model'                     => array('/path/to/models', '/next/path/to/models'),
+        'Model/Behavior'            => array('/path/to/behaviors', '/next/path/to/behaviors'),
+        'Model/Datasource'          => array('/path/to/datasources', '/next/path/to/datasources'),
+        'Model/Datasource/Database' => array('/path/to/databases', '/next/path/to/database'),
+        'Model/Datasource/Session'  => array('/path/to/sessions', '/next/path/to/sessions'),
+        'Controller'                => array('/path/to/controllers', '/next/path/to/controllers'),
+        'Controller/Component'      => array('/path/to/components', '/next/path/to/components'),
+        'Controller/Component/Auth' => array('/path/to/auths', '/next/path/to/auths'),
+        'Controller/Component/Acl'  => array('/path/to/acls', '/next/path/to/acls'),
+        'View'                      => array('/path/to/views', '/next/path/to/views'),
+        'View/Helper'               => array('/path/to/helpers', '/next/path/to/helpers'),
+        'Console'                   => array('/path/to/consoles', '/next/path/to/consoles'),
+        'Console/Command'           => array('/path/to/commands', '/next/path/to/commands'),
+        'Console/Command/Task'      => array('/path/to/tasks', '/next/path/to/tasks'),
+        'Lib'                       => array('/path/to/libs', '/next/path/to/libs'),
+        'Locale'                    => array('/path/to/locales', '/next/path/to/locales'),
+        'Vendor'                    => array('/path/to/vendors', '/next/path/to/vendors'),
+        'Plugin'                    => array('/path/to/plugins', '/next/path/to/plugins'),
     ));
 
 .. note::
@@ -141,7 +159,7 @@ paths where CakePHP will look for classes::
 Core Configuration
 ==================
 
-Each application in CakePHP contains a configuration file to 
+Each application in CakePHP contains a configuration file to
 determine CakePHP's internal behavior.
 ``app/Config/core.php``. This file is a collection of Configure class
 variable definitions and constant definitions that determine how
@@ -152,7 +170,7 @@ configuration registry class.
 CakePHP Core Configuration
 --------------------------
 
-The Configure class is used to manage a set of core CakePHP
+The :php:class:`Configure` class is used to manage a set of core CakePHP
 configuration variables. These variables can be found in
 ``app/Config/core.php``. Below is a description of each variable and
 how it affects your CakePHP application.
@@ -165,31 +183,51 @@ debug
     add $this->element('sql\_dump') to your view or layout.]
 
 Error
-    Configure the Error handler used to handle errors for your application.  
-    By default :php:meth:`ErrorHandler::handleError()` is used.  It will display 
+    Configure the Error handler used to handle errors for your application.
+    By default :php:meth:`ErrorHandler::handleError()` is used.  It will display
     errors using :php:class:`Debugger`, when debug > 0
     and log errors with :php:class:`CakeLog` when debug = 0.
 
     Sub-keys:
 
-    * ``handler`` - callback - The callback to handle errors. You can set this to any 
+    * ``handler`` - callback - The callback to handle errors. You can set this to any
       callback type, including anonymous functions.
     * ``level`` - int - The level of errors you are interested in capturing.
     * ``trace`` - boolean - Include stack traces for errors in log files.
 
 Exception
-    Configure the Exception handler used for uncaught exceptions.  By default, 
-    ErrorHandler::handleException() is used. It will display a HTML page for 
-    the exception, and while debug > 0, framework errors like 
-    Missing Controller will be displayed.  When debug = 0, 
+    Configure the Exception handler used for uncaught exceptions.  By default,
+    ErrorHandler::handleException() is used. It will display a HTML page for
+    the exception, and while debug > 0, framework errors like
+    Missing Controller will be displayed.  When debug = 0,
     framework errors will be coerced into generic HTTP errors.
     For more information on Exception handling, see the :doc:`exceptions`
     section.
 
+.. _core-configuration-baseurl:
+
 App.baseUrl
-    Un-comment this definition if you **don’t** plan to use Apache’s
-    mod\_rewrite with CakePHP. Don’t forget to remove your .htaccess
-    files too.
+    If you don't want or can't get mod\_rewrite (or some other
+    compatible module) up and running on your server, you'll need to
+    use Cake's built in pretty URLs. In ``/app/Config/core.php``,
+    uncomment the line that looks like::
+
+        Configure::write('App.baseUrl', env('SCRIPT_NAME'));
+
+    Also remove these .htaccess files::
+
+        /.htaccess
+        /app/.htaccess
+        /app/webroot/.htaccess
+
+
+    This will make your URLs look like
+    www.example.com/index.php/controllername/actionname/param rather
+    than www.example.com/controllername/actionname/param.
+
+    If you are installing CakePHP on a webserver besides Apache, you
+    can find instructions for getting URL rewriting working for other
+    servers under the :doc:`/installation/url-rewriting` section.
 App.encoding
     Define what encoding your application uses.  This encoding
     is used to generate the charset in the layout, and encode entities.
@@ -207,26 +245,26 @@ Cache.check
     the controllers, but this variable enables the detection of those
     settings.
 Session
-    Contains an array of settings to use for session configuration. The defaults key is 
+    Contains an array of settings to use for session configuration. The defaults key is
     used to define a default preset to use for sessions, any settings declared here will override
     the settings of the default config.
 
     Sub-keys
 
     * ``name`` - The name of the cookie to use. Defaults to 'CAKEPHP'
-    * ``timeout`` - The number of minutes you want sessions to live for. 
+    * ``timeout`` - The number of minutes you want sessions to live for.
       This timeout is handled by CakePHP
     * ``cookieTimeout`` - The number of minutes you want session cookies to live for.
-    * ``checkAgent`` - Do you want the user agent to be checked when starting sessions? 
-      You might want to set the value to false, when dealing with older versions of 
+    * ``checkAgent`` - Do you want the user agent to be checked when starting sessions?
+      You might want to set the value to false, when dealing with older versions of
       IE, Chrome Frame or certain web-browsing devices and AJAX
     * ``defaults`` - The default configuration set to use as a basis for your session.
       There are four builtins: php, cake, cache, database.
-    * ``handler`` - Can be used to enable a custom session handler. 
-      Expects an array of callables, that can be used with `session_save_handler`.  
+    * ``handler`` - Can be used to enable a custom session handler.
+      Expects an array of callables, that can be used with `session_save_handler`.
       Using this option will automatically add `session.save_handler` to the ini array.
-    * ``autoRegenerate`` - Enabling this setting, turns on automatic renewal 
-      of sessions, and sessionids that change frequently. 
+    * ``autoRegenerate`` - Enabling this setting, turns on automatic renewal
+      of sessions, and sessionids that change frequently.
       See :php:attr:`CakeSession::$requestCountdown`.
     * ``ini`` - An associative array of additional ini values to set.
 
@@ -238,23 +276,12 @@ Session
     * 'cache' - Use the Cache class to save sessions.
 
     To define a custom session handler, save it at ``app/Model/Datasource/Session/<name>.php``.
-    Make sure the class implements :php:interface:`CakeSessionHandlerInterface` 
+    Make sure the class implements :php:interface:`CakeSessionHandlerInterface`
     and set Session.handler to <name>
 
     To use database sessions, run the ``app/Config/Schema/sessions.php`` schema using
     the cake shell command: ``cake schema create Sessions``
 
-Security.level
-    The level of CakePHP security. The session timeout time defined in
-    'Session.timeout' is multiplied according to the settings here.
-    Valid values:
-    'high' = x 10
-    'medium' = x 100
-    'low' = x 300
-    'high' and 'medium' also enable
-    `session.referer\_check <http://www.php.net/manual/en/session.configuration.php#ini.session.referer-check>`_
-    CakePHP session IDs are also regenerated between requests if
-    'Security.level' is set to 'high'.
 Security.salt
     A random string used in security hashing.
 Security.cipherSeed
@@ -318,7 +345,7 @@ values by defining variable or constants in some files. Doing so
 forces you to include that configuration file every time you needed
 to use those values.
 
-CakePHP’s new Configure class can be used to store and retrieve
+CakePHP’s Configure class can be used to store and retrieve
 application or runtime specific values. Be careful, this class
 allows you to store anything in it, then use it in any other part
 of your code: a sure temptation to break the MVC pattern CakePHP
@@ -330,7 +357,7 @@ won't end up breaking the MVC structure we’ve set in place.
 This class can be called from
 anywhere within your application, in a static context::
 
-    <?php Configure::read('debug'); ?>
+    Configure::read('debug');
 
 .. php:staticmethod:: write($key, $value)
 
@@ -339,7 +366,6 @@ anywhere within your application, in a static context::
 
     Use ``write()`` to store data in the application’s configuration::
 
-        <?php
         Configure::write('Company.name','Pizza, Inc.');
         Configure::write('Company.slogan','Pizza for your body and soul');
 
@@ -350,7 +376,6 @@ anywhere within your application, in a static context::
 
     The above example could also be written in a single call::
 
-        <?php
         Configure::write(
             'Company', array('name' => 'Pizza, Inc.', 'slogan' => 'Pizza for your body and soul')
         );
@@ -369,16 +394,24 @@ anywhere within your application, in a static context::
     returned. Using our examples from write() above, we can read that
     data back::
 
-        <?php
         Configure::read('Company.name');    //yields: 'Pizza, Inc.'
         Configure::read('Company.slogan');  //yields: 'Pizza for your body and soul'
 
         Configure::read('Company');
 
-        //yields: 
+        //yields:
         array('name' => 'Pizza, Inc.', 'slogan' => 'Pizza for your body and soul');
 
     If $key is left null, all values in Configure will be returned.
+
+.. php:staticmethod:: check($key)
+
+    :param string $key: The key to check.
+
+    Used to check if a key/path exists and has not-null value.
+
+    .. versionadded:: 2.3
+        ``Configure::check()`` was added in 2.3
 
 .. php:staticmethod:: delete($key)
 
@@ -386,7 +419,6 @@ anywhere within your application, in a static context::
 
     Used to delete information from the application’s configuration::
 
-        <?php
         Configure::delete('Company.name');
 
 .. php:staticmethod:: version()
@@ -414,20 +446,18 @@ anywhere within your application, in a static context::
 
     Drops a connected reader object.
 
-.. _loading-configuration-files:
 
-Loading configuration files
-===========================
+Reading and writing configuration files
+=======================================
 
-CakePHP comes with two built-in configuration file readers.  
-:php:class:`PhpReader` is able to read PHP config files, in the same 
+CakePHP comes with two built-in configuration file readers.
+:php:class:`PhpReader` is able to read PHP config files, in the same
 format that Configure has historically read.  :php:class:`IniReader` is
-able to read ini config files.  See the `PHP documentation <http://php.net/parse_ini_file>`_ 
-for more information on the specifics of ini files. 
-To use a core config reader, you'll need to attach it to Configure 
+able to read ini config files.  See the `PHP documentation <http://php.net/parse_ini_file>`_
+for more information on the specifics of ini files.
+To use a core config reader, you'll need to attach it to Configure
 using :php:meth:`Configure::config()`::
 
-    <?php
     App::uses('PhpReader', 'Configure');
     // Read config files from app/Config
     Configure::config('default', new PhpReader());
@@ -436,21 +466,26 @@ using :php:meth:`Configure::config()`::
     Configure::config('default', new PhpReader('/path/to/your/config/files/'));
 
 You can have multiple readers attached to Configure, each reading
-different kinds of configuration files, or reading from 
-different types of sources.  You can interact with attached readers 
-using a few other methods on Configure. To see check which reader 
+different kinds of configuration files, or reading from
+different types of sources.  You can interact with attached readers
+using a few other methods on Configure. To see check which reader
 aliases are attached you can use :php:meth:`Configure::configured()`::
 
-    <?php
     // Get the array of aliases for attached readers.
-    Configure::configured()
+    Configure::configured();
 
     // Check if a specific reader is attached
     Configure::configured('default');
 
 You can also remove attached readers.  ``Configure::drop('default')``
-would remove the default reader alias. Any future attempts to load configuration 
+would remove the default reader alias. Any future attempts to load configuration
 files with that reader would fail.
+
+
+.. _loading-configuration-files:
+
+Loading configuration files
+---------------------------
 
 .. php:staticmethod:: load($key, $config = 'default', $merge = true)
 
@@ -461,14 +496,44 @@ files with that reader would fail.
 
 Once you've attached a config reader to Configure you can load configuration files::
 
-    <?php
     // Load my_file.php using the 'default' reader object.
     Configure::load('my_file', 'default');
 
-Loaded configuration files merge their data with the existing runtime configuration 
-in Configure.  This allows you to overwrite and add new values 
+Loaded configuration files merge their data with the existing runtime configuration
+in Configure.  This allows you to overwrite and add new values
 into the existing runtime configuration. By setting ``$merge`` to true, values
 will not ever overwrite the existing configuration.
+
+Creating or modifying configuration files
+-----------------------------------------
+
+.. php:staticmethod:: dump($key, $config = 'default', $keys = array())
+
+    :param string $key: The name of the file/stored configuration to be created.
+    :param string $config: The name of the reader to store the data with.
+    :param array $keys: The list of top-level keys to save.  Defaults to all
+        keys.
+
+Dumps all or some of the data in Configure into a file or storage system
+supported by a config reader. The serialization format
+is decided by the config reader attached as $config.  For example, if the
+'default' adapter is a :php:class:`PhpReader`, the generated file will be a PHP
+configuration file loadable by the :php:class:`PhpReader`
+
+Given that the 'default' reader is an instance of PhpReader.
+Save all data in Configure to the file `my_config.php`::
+
+    Configure::dump('my_config.php', 'default');
+
+Save only the error handling configuration::
+
+    Configure::dump('error.php', 'default', array('Error', 'Exception'));
+
+``Configure::dump()`` can be used to either modify or overwrite
+configuration files that are readable with :php:meth:`Configure::load()`
+
+.. versionadded:: 2.2
+    ``Configure::dump()`` was added in 2.2.
 
 Storing runtime configuration
 -----------------------------
@@ -481,16 +546,15 @@ Storing runtime configuration
     :param mixed $data: Either the data to store, or leave null to store all data
         in Configure.
 
-You can also store runtime configuration values for use in a future request.  
-Since configure only remembers values for the current request, you will 
-need to store any modified configuration information if you want to 
+You can also store runtime configuration values for use in a future request.
+Since configure only remembers values for the current request, you will
+need to store any modified configuration information if you want to
 use it in subsequent requests::
 
-    <?php
     // Store the current configuration in the 'user_1234' key in the 'default' cache.
     Configure::store('user_1234', 'default');
 
-Stored configuration data is persisted in the :php:class:`Cache` class. This allows 
+Stored configuration data is persisted in the :php:class:`Cache` class. This allows
 you to store Configuration information in any storage engine that :php:class:`Cache` can talk to.
 
 Restoring runtime configuration
@@ -501,28 +565,26 @@ Restoring runtime configuration
     :param string $name: The storage key to load.
     :param string $cacheConfig: The cache configuration to load the data from.
 
-Once you've stored runtime configuration, you'll probably need to restore it 
+Once you've stored runtime configuration, you'll probably need to restore it
 so you can access it again.  ``Configure::restore()`` does exactly that::
 
-    <?php
     // restore runtime configuration from the cache.
     Configure::restore('user_1234', 'default');
 
 When restoring configuration information it's important to restore it with
-the same key, and cache configuration as was used to store it.  Restored 
+the same key, and cache configuration as was used to store it.  Restored
 information is merged on top of the existing runtime configuration.
 
 Creating your own Configuration readers
 =======================================
 
-Since configuration readers are an extensible part of CakePHP, 
-you can create configuration readers in your application and plugins.  
-Configuration readers need to implement the :php:interface:`ConfigReaderInterface`.  
-This interface defines a read method, as the only required method. 
-If you really like XML files, you could create a simple Xml config 
+Since configuration readers are an extensible part of CakePHP,
+you can create configuration readers in your application and plugins.
+Configuration readers need to implement the :php:interface:`ConfigReaderInterface`.
+This interface defines a read method, as the only required method.
+If you really like XML files, you could create a simple Xml config
 reader for you application::
 
-    <?php
     // in app/Lib/Configure/XmlReader.php
     App::uses('Xml', 'Utility');
     class XmlReader implements ConfigReaderInterface {
@@ -537,18 +599,22 @@ reader for you application::
             $xml = Xml::build($this->_path . $key . '.xml');
             return Xml::toArray($xml);
         }
+
+        // As of 2.3 a dump() method is also required
+        public function dump($key, $data) {
+            // code to dump data to file
+        }
     }
 
 In your ``app/Config/bootstrap.php`` you could attach this reader and use it::
 
-    <?php
     App::uses('XmlReader', 'Configure');
     Configure::config('xml', new XmlReader());
     ...
 
     Configure::load('my_xml');
 
-The ``read()`` method of a config reader, must return an array of the configuration information 
+The ``read()`` method of a config reader, must return an array of the configuration information
 that the resource named ``$key`` contains.
 
 .. php:interface:: ConfigReaderInterface
@@ -562,6 +628,16 @@ that the resource named ``$key`` contains.
 
     This method should load/parse the configuration data identified by ``$key``
     and return an array of data in the file.
+
+.. php:method:: dump($key)
+
+    :param string $key: The identifier to write to.
+    :param array $data: The data to dump.
+
+    This method should dump/store the provided configuration data to a key identified by ``$key``.
+
+.. versionadded:: 2.3
+    ``ConfigReaderInterface::dump()`` was added in 2.3.
 
 .. php:exception:: ConfigureException
 
@@ -579,7 +655,6 @@ Built-in Configuration readers
     directories by using :term:`plugin syntax`.  Files **must** contain a ``$config``
     variable.  An example configuration file would look like::
 
-        <?php
         $config = array(
             'debug' => 0,
             'Security' => array(
@@ -601,7 +676,7 @@ Built-in Configuration readers
 .. php:class:: IniReader
 
     Allows you to read configuration files that are stored as plain .ini files.
-    The ini files must be compatible with php's ``parse_ini_file`` function, and 
+    The ini files must be compatible with php's ``parse_ini_file`` function, and
     benefit from the following improvements
 
     * dot separated values are expanded into arrays.
@@ -647,7 +722,6 @@ Loading custom inflections
 You can use :php:meth:`Inflector::rules()` in the file
 ``app/Config/bootstrap.php`` to load custom inflections::
 
-    <?php
     Inflector::rules('singular', array(
         'rules' => array('/^(bil)er$/i' => '\1', '/^(inflec|contribu)tors$/i' => '\1ta'),
         'uninflected' => array('singulars'),
@@ -656,7 +730,6 @@ You can use :php:meth:`Inflector::rules()` in the file
 
 or::
 
-    <?php
     Inflector::rules('plural', array('irregular' => array('phylum' => 'phyla')));
 
 Will merge the supplied rules into the inflection sets defined in

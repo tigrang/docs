@@ -22,14 +22,13 @@ CakePHPでの開発にはこれらの規約の利用をお勧めしますが、�
 コントローラ関数名の先頭にアンダースコア（\_）を付けることで、CakePHP のコントローラメソッドを隠蔽することが可能です。
 アンダースコアが付けられたコントローラメソッドは web 上では見えないように設定され、内部での利用のみ可能になります。例えば::
 
-    <?php
     class NewsController extends AppController {
     
-        function latest() {
+        public function latest() {
             $this->_findNewArticles();
         }
         
-        function _findNewArticles() {
+        protected function _findNewArticles() {
             //最新のニュース記事を取得するロジック
         }
     }
@@ -89,7 +88,7 @@ CakePHP の URL とパラメータの取り扱いに関するより詳細な情�
 Person、BigPerson、ReallyBigPerson などは規約に合ったモデル名です。
 
 CakePHP のモデルに対応するテーブル名は、複数形でアンダースコア記法です。
-上記の例で言えば、テーブル名はそれぞれ、 people、 ``big_people`` 、 ``really_big_people`` になります。
+上記の例で言えば、テーブル名はそれぞれ、 ``people`` 、 ``big_people`` 、 ``really_big_people`` になります。
 
 ユーティリティライブラリの :php:class:`Inflector` を使って、単語の単数形・複数形を判定することができます。
 より詳しい情報は、 :doc:`/core-utility-libraries/inflector` を読んでください。

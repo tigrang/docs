@@ -3,11 +3,16 @@
 # http://bazaar.launchpad.net/~bzr-pqm/bzr/2.3/
 
 PYTHON = python
+ES_HOST =
 
 .PHONY: all clean html latexpdf epub htmlhelp website website-dirs
 
 # Languages that can be built.
 LANGS = en es fr ja pt ru
+
+# pdflatex does not like ja or ru for some reason.
+PDF_LANGS = en es fr pt
+
 DEST = website
 
 # Dependencies to perform before running other builds.
@@ -26,6 +31,8 @@ SPHINX_DEPENDENCIES = $(foreach lang, $(LANGS), $(lang)/Makefile)
 html: $(foreach lang, $(LANGS), html-$(lang))
 htmlhelp: $(foreach lang, $(LANGS), htmlhelp-$(lang))
 epub: $(foreach lang, $(LANGS), epub-$(lang))
+latex: $(foreach lang, $(PDF_LANGS), latex-$(lang))
+pdf: $(foreach lang, $(PDF_LANGS), pdf-$(lang))
 htmlhelp: $(foreach lang, $(LANGS), htmlhelp-$(lang))
 populate-index: $(foreach lang, $(LANGS), populate-index-$(lang))
 
@@ -40,11 +47,14 @@ htmlhelp-%: $(SPHINX_DEPENDENCIES)
 epub-%: $(SPHINX_DEPENDENCIES)
 	cd $* && make epub LANG=$*
 
-latexpdf-%: $(SPHINX_DEPENDENCIES)
+latex-%: $(SPHINX_DEPENDENCIES)
+	cd $* && make latex LANG=$*
+
+pdf-%: $(SPHINX_DEPENDENCIES)
 	cd $* && make latexpdf LANG=$*
 
 populate-index-%: $(SPHINX_DEPENDENCIES)
-	php scripts/populate_search_index.php $*
+	php scripts/populate_search_index.php $* $(ES_HOST)
 
 website-dirs:
 	# Make the directory if its not there already.
@@ -56,12 +66,15 @@ website-dirs:
 	# Make downloads for each language
 	$(foreach lang, $(LANGS), [ ! -d $(DEST)/_downloads/$(lang) ] && mkdir $(DEST)/_downloads/$(lang) || true;)
 
-website: website-dirs html populate-index epub
+website: website-dirs html populate-index epub pdf
 	# Move HTML
 	$(foreach lang, $(LANGS), cp -r build/html/$(lang) $(DEST)/$(lang);)
-	
+
 	# Move EPUB files
-	$(foreach lang, $(LANGS), cp -r build/epub/$(lang)/*.epub $(DEST)/_downloads/$(lang);)
+	$(foreach lang, $(LANGS), cp -r build/epub/$(lang)/*.epub $(DEST)/_downloads/$(lang) || true;)
+
+	# Move PDF files
+	$(foreach lang, $(PDF_LANGS), [ -f build/latex/$(lang)/*.pdf ] && cp -r build/latex/$(lang)/*.pdf $(DEST)/_downloads/$(lang) || true;)
 
 clean:
 	rm -rf build/*

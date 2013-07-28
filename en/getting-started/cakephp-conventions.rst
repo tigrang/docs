@@ -37,7 +37,6 @@ controller method has been prefixed with an underscore, the method
 will not be accessible directly from the web but is available for
 internal use. For example::
 
-    <?php
     class NewsController extends AppController {
     
         public function latest() {
@@ -117,7 +116,7 @@ and ReallyBigPerson are all examples of conventional model names.
 
 Table names corresponding to CakePHP models are plural and
 underscored. The underlying tables for the above mentioned models
-would be people, ``big_people``, and ``really_big_people``,
+would be ``people``, ``big_people``, and ``really_big_people``,
 respectively.
 
 You can use the utility library :php:class:`Inflector` to check the

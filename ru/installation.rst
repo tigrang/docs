@@ -42,13 +42,13 @@ CakePHP имеет MIT лицензию. Это значит, что вы име
 git-репозитория.
 
 Чтобы скачать последний релиз CakePHP, посетите официальный сайт
-`http://www.cakephp.org <http://www.cakephp.org>`_ и
+`http://cakephp.org <http://cakephp.org>`_ и
 нажмите ссылку "Download".
 
 Все текущие релизы CakePHP размещены на 
 `Github <http://github.com/cakephp/cakephp>`_, так же, как и
 многие плагины для CakePHP. Релизы CakePHP доступны в
-`Github downloads <http://github.com/cakephp/cakephp/downloads>`_.
+`Github tags <https://github.com/cakephp/cakephp/tags>`_.
 
 К тому же вы можете получить самую последнюю версию кода с помощью
 клонирования репозитория на `Github`_ ::
@@ -63,7 +63,7 @@ CakePHP использует папку ``app/tmp`` для ряда различ
 Например, описания моделей, кеширования представлений, сессий и т.д,
 потому убедитесь, что каталог ``app/tmp`` и все его подкаталоги 
 доступны для записи пользователем, от которого работает веб сервер.
-В *nix для этого достаточно зайти в директорию app и выполнить 
+В \*nix для этого достаточно зайти в директорию app и выполнить 
 комманду ``chmod -R 0777 tmp/``.
 
 Установка
@@ -167,7 +167,6 @@ Production установка
 Не работает? Если вы получили ошибку связанную с временной зоной,
 раскомментируйте строку в ``app/Config/core.php``::
 
-   <?php
    /**
     * If you are on PHP 5.3 uncomment this line and correct your server timezone
     * to fix the date & time related errors.

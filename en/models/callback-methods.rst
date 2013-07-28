@@ -7,10 +7,13 @@ defined in model classes (including your AppModel) class. Be sure
 to note the expected return values for each of these special
 functions.
 
+When using callback methods you should remember that behavior callbacks are
+fired **before** model callbacks are.
+
 beforeFind
 ==========
 
-``beforeFind(mixed $queryData)``
+``beforeFind(array $queryData)``
 
 Called before any find-related operation. The ``$queryData`` passed
 to this callback contains information about the current query:
@@ -27,14 +30,13 @@ user’s role, or make caching decisions based on the current load.
 afterFind
 =========
 
-``afterFind(array $results, bool $primary)``
+``afterFind(array $results, boolean $primary = false)``
 
 Use this callback to modify results that have been returned from a
 find operation, or to perform any other post-find logic. The
 $results parameter passed to this callback contains the returned
 results from the model's find operation, i.e. something like::
 
-    <?php
     $results = array(
         0 => array(
             'ModelName' => array(
@@ -55,7 +57,6 @@ an association the format of ``$results`` can differ; instead of the
 result you would normally get from a find operation, you may get
 this::
 
-    <?php
     $results = array(
         'field_1' => 'value1',
         'field_2' => 'value2'
@@ -70,8 +71,7 @@ this::
 Below is an example of how afterfind can be used for date
 formatting::
 
-    <?php
-    public function afterFind($results) {
+    public function afterFind($results, $primary = false) {
         foreach ($results as $key => $val) {
             if (isset($val['Event']['begindate'])) {
                 $results[$key]['Event']['begindate'] = $this->dateFormatAfterFind($val['Event']['begindate']);
@@ -87,7 +87,7 @@ formatting::
 beforeValidate
 ==============
 
-``beforeValidate()``
+``beforeValidate(array $options = array())``
 
 Use this callback to modify model data before it is validated, or
 to modify validation rules if required. This function must also
@@ -96,7 +96,7 @@ return *true*, otherwise the current save() execution will abort.
 beforeSave
 ==========
 
-``beforeSave()``
+``beforeSave(array $options = array())``
 
 Place any pre-save logic in this function. This function executes
 immediately after model data has been successfully validated, but
@@ -116,8 +116,7 @@ changed very easily. Use the code below in the appropriate model.
 
 ::
 
-    <?php
-    public function beforeSave() {
+    public function beforeSave($options = array()) {
         if (!empty($this->data['Event']['begindate']) && !empty($this->data['Event']['enddate'])) {
             $this->data['Event']['begindate'] = $this->dateFormatBeforeSave($this->data['Event']['begindate']);
             $this->data['Event']['enddate'] = $this->dateFormatBeforeSave($this->data['Event']['enddate']);
@@ -148,7 +147,7 @@ The value of ``$created`` will be true if a new record was created
 beforeDelete
 ============
 
-``beforeDelete(boolean $cascade)``
+``beforeDelete(boolean $cascade = true)``
 
 Place any pre-deletion logic in this function. This function should
 return true if you want the deletion to continue, and false if you
@@ -164,12 +163,11 @@ on this record will also be deleted.
 
 ::
 
-    <?php
     // using app/Model/ProductCategory.php
     // In the following example, do not let a product category be deleted if it still contains products.
     // A call of $this->Product->delete($id) from ProductsController.php has set $this->id .
     // Assuming 'ProductCategory hasMany Product', we can access $this->Product in the model.
-    public function beforeDelete() {
+    public function beforeDelete($cascade = true) {
         $count = $this->Product->find("count", array(
             "conditions" => array("product_category_id" => $this->id)
         ));

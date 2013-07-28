@@ -33,9 +33,7 @@ Attaching the Translate Behavior to your Models
 Add it to your model by using the ``$actsAs`` property like in the
 following example.::
 
-    <?php
     class Post extends AppModel {
-        public $name = 'Post';
         public $actsAs = array(
             'Translate'
         );
@@ -52,9 +50,7 @@ Defining the Fields
 You can set the fields by simply extending the ``'Translate'``
 value with another array, like so::
 
-    <?php
     class Post extends AppModel {
-        public $name = 'Post';
         public $actsAs = array(
             'Translate' => array(
                 'fieldOne', 'fieldTwo', 'and_so_on'
@@ -62,16 +58,14 @@ value with another array, like so::
         );
     }
 
-After you have done that (for example putting "name" as one of the
+After you have done that (for example putting "title" as one of the
 fields) you already finished the basic setup. Great! According to
 our current example the model should now look something like this::
 
-    <?php
     class Post extends AppModel {
-        public $name = 'Post';
         public $actsAs = array(
             'Translate' => array(
-                'name'
+                'title'
             )
         );
     }
@@ -85,36 +79,47 @@ Conclusion
 ==========
 
 From now on each record update/creation will cause
-TranslateBehavior to copy the value of "name" to the translation
+TranslateBehavior to copy the value of "title" to the translation
 table (default: i18n) along with the current locale. A locale is
 the identifier of the language, so to speak.
 
-The *current locale* is the current value of
-``Configure::read('Config.language')``. The value of
-*Config.language* is assigned in the L10n Class - unless it is
-already set. However, the TranslateBehavior allows you to override
-this on-the-fly, which allows the user of your page to create
-multiple versions without the need to change his preferences. More
-about this in the next section.
+
+Reading translated content
+==========================
+
+By default the TranslateBehavior will automatically fetch and add in data based
+on the current locale.  The current locale is read from ``Configure::read('Config.language')``
+which is assigned by the :php:class:`L10n` class.  You can override this
+default on the fly using ``$Model->locale``.
+
+Retrieve translated fields in a specific locale
+-----------------------------------------------
+
+By setting ``$Model->locale`` you can read translations for a specific locale::
+
+    // Read the spanish locale data.
+    $this->Post->locale = 'es';
+    $results = $this->Post->find('first', array(
+        'conditions' => array('Post.id' => $id)
+    ));
+    // $results will contain the spanish translation.
 
 Retrieve all translation records for a field
-============================================
+--------------------------------------------
 
 If you want to have all translation records attached to the current
-model record you simply extend the *field array* in your behavior
+model record you simply extend the **field array** in your behavior
 setup as shown below. The naming is completely up to you.::
 
-    <?php
     class Post extends AppModel {
-        public $name = 'Post';
         public $actsAs = array(
             'Translate' => array(
-                'name' => 'nameTranslation'
+                'title' => 'titleTranslation'
             )
         );
     }
 
-With this setup the result of $this->Post->find() should look
+With this setup the result of ``$this->Post->find()`` should look
 something like this::
 
     Array
@@ -122,12 +127,12 @@ something like this::
          [Post] => Array
              (
                  [id] => 1
-                 [name] => Beispiel Eintrag 
+                 [title] => Beispiel Eintrag
                  [body] => lorem ipsum...
                  [locale] => de_de
              )
-    
-         [nameTranslation] => Array
+
+         [titleTranslation] => Array
              (
                  [0] => Array
                      (
@@ -135,25 +140,27 @@ something like this::
                          [locale] => en_us
                          [model] => Post
                          [foreign_key] => 1
-                         [field] => name
+                         [field] => title
                          [content] => Example entry
                      )
-    
+
                  [1] => Array
                      (
                          [id] => 2
                          [locale] => de_de
                          [model] => Post
                          [foreign_key] => 1
-                         [field] => name
+                         [field] => title
                          [content] => Beispiel Eintrag
                      )
-    
+
              )
     )
 
-**Note**: The model record contains a *virtual* field called
-"locale". It indicates which locale is used in this result.
+.. note::
+
+    The model record contains a *virtual* field called
+    "locale". It indicates which locale is used in this result.
 
 Note that only fields of the model you are directly doing \`find\`
 on will be translated. Models attached via associations won't be
@@ -161,19 +168,18 @@ translated because triggering callbacks on associated models is
 currently not supported.
 
 Using the bindTranslation method
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------------
 
 You can also retrieve all translations, only when you need them,
 using the bindTranslation method
 
-``bindTranslation($fields, $reset)``
+.. php:method:: bindTranslation($fields, $reset)
 
 ``$fields`` is a named-key array of field and association name,
 where the key is the translatable field and the value is the fake
 association name.::
 
-    <?php
-    $this->Post->bindTranslation(array('name' => 'nameTranslation'));
+    $this->Post->bindTranslation(array('title' => 'titleTranslation'));
     $this->Post->find('all', array('recursive' => 1)); // need at least recursive 1 for this to work.
 
 With this setup the result of your find() should look something
@@ -184,12 +190,12 @@ like this::
          [Post] => Array
              (
                  [id] => 1
-                 [name] => Beispiel Eintrag
+                 [title] => Beispiel Eintrag
                  [body] => lorem ipsum...
                  [locale] => de_de
              )
 
-         [nameTranslation] => Array
+         [titleTranslation] => Array
              (
                  [0] => Array
                      (
@@ -197,7 +203,7 @@ like this::
                          [locale] => en_us
                          [model] => Post
                          [foreign_key] => 1
-                         [field] => name
+                         [field] => title
                          [content] => Example entry
                      )
 
@@ -207,7 +213,7 @@ like this::
                          [locale] => de_de
                          [model] => Post
                          [foreign_key] => 1
-                         [field] => name
+                         [field] => title
                          [content] => Beispiel Eintrag
                      )
 
@@ -227,9 +233,7 @@ your controller or you can define it directly in the model.
 
 **Example A:** In your controller::
 
-    <?php
     class PostsController extends AppController {
-        public $name = 'Posts';
 
         public function add() {
             if (!empty($this->request->data)) {
@@ -244,12 +248,10 @@ your controller or you can define it directly in the model.
 
 **Example B:** In your model::
 
-    <?php
     class Post extends AppModel {
-        public $name = 'Post';
         public $actsAs = array(
             'Translate' => array(
-                'name'
+                'title'
             )
         );
 
@@ -276,28 +278,28 @@ Lets say we want to save our translations for all posts in the
 table "post\_i18ns" instead of the default "i18n" table. To do so
 you need to setup your model like this::
 
-    <?php
     class Post extends AppModel {
-        public $name = 'Post';
         public $actsAs = array(
             'Translate' => array(
-                'name'
+                'title'
             )
         );
-        
+
         // Use a different model (and table)
         public $translateModel = 'PostI18n';
     }
 
-**Important** is that you have to pluralize the table. It is now a
-usual model and can be treated as such and thus comes with the
-conventions involved. The table schema itself must be identical
-with the one generated by the CakePHP console script. To make sure
-it fits one could just initialize a empty i18n table using the
-console and rename the table afterwards.
+.. note::
+
+    It is important that you to pluralize the table. It is now a
+    usual model and can be treated as such and thus comes with the
+    conventions involved. The table schema itself must be identical
+    with the one generated by the CakePHP console script. To make sure
+    it fits one could just initialize a empty i18n table using the
+    console and rename the table afterwards.
 
 Create the TranslateModel
-~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------
 
 For this to work you need to create the actual model file in your
 models folder. Reason is that there is no property to set the
@@ -305,8 +307,7 @@ displayField directly in the model using this behavior yet.
 
 Make sure that you change the ``$displayField`` to ``'field'``.::
 
-    <?php
-    class PostI18n extends AppModel { 
+    class PostI18n extends AppModel {
         public $displayField = 'field'; // important
     }
     // filename: PostI18n.php
@@ -317,23 +318,21 @@ model which actually uses this translation model. This is where the
 optional ``$translateTable`` comes into play.
 
 Changing the Table
-~~~~~~~~~~~~~~~~~~
+------------------
 
 If you want to change the name of the table you simply define
 $translateTable in your model, like so::
 
-    <?php
     class Post extends AppModel {
-        public $name = 'Post';
         public $actsAs = array(
             'Translate' => array(
-                'name'
+                'title'
             )
         );
-        
+
         // Use a different model
         public $translateModel = 'PostI18n';
-        
+
         // Use a different table for translateModel
         public $translateTable = 'post_translations';
     }

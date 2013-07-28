@@ -13,7 +13,7 @@
 サポートするPHPバージョン
 =========================
 
-CakePHP 2.xはPHP 5.2.6以上をサポートします。
+CakePHP 2.xはPHP 5.2.8以上をサポートします。
 PHP4のサポートは止めることになります。
 いまだPHP4環境での案件で働いている開発者のために、PHP4の開発とサポートの継続期間のうちまで、CakePHP1.xは続けてPHP4をサポートします。
 
@@ -27,7 +27,7 @@ PHP5に移行するということは、全てのメソッドとプロパティ�
 
 CakePHP 2.0では、ファイルとフォルダの構造化をする方法を考えなおしました。
 PHP 5.3が名前空間のサポートをしていることから、このPHPバージョンを近い将来採用するのに、コードベースを準備することに決めました。
-従って、 http://groups.google.com/group/php-standards/web/psr-0-final-proposal を採用することにしました。
+従って、 https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-0.md を採用することにしました。
 まずはじめに、ここ数年の後にCakePHP 1.3の内部構造を振り返ると、明確なファイル構成が無いことと、またディレクトリ構成が各々のファイルがどこにあるべきかを真に指し示していないことに気づきました。
 この変更に伴い、全体的なフレームワークのパフォーマンスの向上のための（ほぼ）自動的なクラス読み込みについて多少の実験を行うことができるでしょう
 
@@ -78,11 +78,15 @@ PHP 5.3が名前空間のサポートをしていることから、このPHPバ�
 * webroot
 * tmp
 
+htaccess (URL リライティング)
+===============================================
+``app/webroot/.htaccess`` の ``RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]`` の行を ``RewriteRule ^(.*)$ index.php [QSA,L]`` に置き換えてください。
+
 AppController / AppModel / AppHelper / AppShell
 ===============================================
 
 ``app/app_controller.php`` 、 ``app/app_model.php`` 、 ``app/app_helper.php`` はそれぞれ、
-``app/Controller/AppController.php`` 、 ``app/Model/AppModel.php`` 、 ``app/Helper/AppHelper.php`` に配置・名称変更されました。
+``app/Controller/AppController.php`` 、 ``app/Model/AppModel.php`` 、 ``app/View/Helper/AppHelper.php`` に配置・名称変更されました。
 
 また、全てのシェル・タスクはAppShellを継承するようになりました。
 独自のAppShell.phpを ``app/Console/Command/AppShell.php`` にもつことができます。
@@ -95,10 +99,9 @@ __() (二つのアンダースコアでのショートカット関数)
 
 翻訳の結果を表示させたい場合は::
 
-    <?php
     echo __('My Message');
-    
-としてください。この変更は全ての翻訳のショートカット関数を含みます:::
+
+としてください。この変更は全ての翻訳のショートカット関数を含みます::
 
     __()
     __n()
@@ -111,7 +114,6 @@ __() (二つのアンダースコアでのショートカット関数)
 これに併せて、オプションパラメータを渡しているなら、翻訳はパラメータを用いて `sprintf <http://php.net/manual/ja/function.sprintf.php>`_ を値を返す前に呼び出します。
 以下は一例です::
 
-    <?php
     // "Called: MyClass:myMethod" のようなものを返す
     echo __('Called: %s:%s', $className, $methodName);
 
@@ -130,7 +132,7 @@ CakePHPの前バージョンでは、これらの値が環境によって変わ�
 Basics.php
 ==========
 
--  ``getMicrotime()は削除されました。
+-  ``getMicrotime()`` は削除されました。
    代わりにネイティブの ``microtime(true)`` を使用してください。
 -  ``e()`` は削除されました。
    ``echo`` を使用してください。
@@ -147,7 +149,7 @@ Basics.php
 -  ``params()`` は削除されました。
    これはCakePHP内で使われることはありませんでした。
 -  ``ife()`` は削除されました。
-    三項演算子を使ってください。
+   三項演算子を使ってください。
 -  ``uses()`` は削除されました。
    ``App::import()`` を使ってください。
 -  PHP4互換のための関数は削除されました。
@@ -196,6 +198,12 @@ CakePHPは ``$_GET['url']`` をアプリケーションのリクエストパス�
 これらの変更により、.htaccessファイルと ``app/webroot/index.php`` を、この変更を適用するために変更されたファイルに書き換える必要があります。
 また、 ``$this->params['url']['url']`` はもう存在しません。
 同等の値を得るには、代わりに$this->request->urlを使用する必要があります。
+この属性には、URLから先頭のスラッシュ ``/`` の直前までを除いた値が格納されています。
+
+Note: ホームページ自体(``http://domain/``)の $this->request->url は、
+``/`` の代わりに ``false`` を返します。必要に応じて判定に使ってください::
+
+    if (!$this->request->url) {} // $this->request->url === '/' の代わり
 
 コンポーネント
 ==============
@@ -203,9 +211,8 @@ CakePHPは ``$_GET['url']`` をアプリケーションのリクエストパス�
 Componentは、全てのコンポーネントが必須とする基底クラスになりました。
 コンポーネントとそのコンストラクタが変更になったことから、これを書き換える必要があります::
 
-    <?php
     class PrgComponent extends Component {
-        function __construct(ComponentCollection $collection, $settings = array()) {
+        public function __construct(ComponentCollection $collection, $settings = array()) {
             parent::__construct($collection, $settings);
         }
     }
@@ -217,7 +224,7 @@ Componentは、全てのコンポーネントが必須とする基底クラス�
 設定がコンポーネントのコンストラクタに移動したことで、 ``initialize()`` コールバックは2番目の引数に ``$settings`` を受け取らないようになりました。
 以下のメソッド特性を使うようにコンポーネントを書き換える必要があります::
 
-    function initialize($controller) { }
+    public function initialize(Controller $controller) { }
 
 加えて、initialize()メソッドはコンポーネントが有効な時のみ呼び出されます。
 これは通常、コントローラに直接付随したコンポーネントを意味します。
@@ -229,7 +236,6 @@ Componentで非推奨となったすべてのコールバックはComponentColle
 コールバックと対話するには代わりに `trigger()` メソッドを使う必要があります。
 コールバックを引き起こす必要があるなら、以下のように呼び出すことができます::
 
-    <?php
     $this->Components->trigger('someCallback', array(&$this));
 
 コンポーネント無効化の変更点
@@ -337,7 +343,7 @@ App
 ``App::build()`` のAPIは ``App::build($paths, $mode).`` に変更されました。
 これで既存のパスに前方追加(*prepend*)、後方追加(*append*)、リセットをかけられるようになりました。
 $mode引数は次の3つの値を取ることができます: App::APPEND、App::PREPEND、 ``App::RESET`` 。
-この関数のデフォルトの振る舞いは同じものが残されています（つまり、既存のリストの後方に新しいパスが追加されます）。
+この関数のデフォルトの振る舞いは同じものが残されています（つまり、既存のリストの前方に新しいパスが追加されます）。
 
 App::path()
 ~~~~~~~~~~~
@@ -405,7 +411,6 @@ App::uses()を用いたクラスの読み込み
 クラスの読み込み方が大きく書き直されましたが、手慣れた方法を尊重するためにアプリケーションのコードを変更する必要が稀にあります。
 最も大きな変更は新しいメソッドが導入されたことです::
 
-    <?php
     App::uses('AuthComponent', 'Controller/Component');
 
 私たちは関数名を、クラス名を探索すべき場所を宣言する方法であるPHP 5.3の ``use`` キーワードを模倣するものと定めました。
@@ -416,41 +421,39 @@ CakePHP 1.3の :php:meth:`App::import()` との主な違いは、前者が実際
 
 :php:meth:`App::import()` から移行し :php:meth:`App::uses()` を使用するいくつかの例を挙げます::
 
-    <?php
     App::import('Controller', 'Pages');
-    // は次のようになる 
+    // は次のようになる
     App::uses('PagesController', 'Controller');
 
-    App::import('Component', 'Email');
-    // は次のようになる 
-    App::uses('EmailComponent', 'Controller/Component');
+    App::import('Component', 'Auth');
+    // は次のようになる
+    App::uses('AuthComponent', 'Controller/Component');
 
     App::import('View', 'Media');
-    // は次のようになる 
+    // は次のようになる
     App::uses('MediaView', 'View');
 
     App::import('Core', 'Xml');
-    // は次のようになる 
+    // は次のようになる
     App::uses('Xml', 'Utility');
 
-    App::import('Datasource', 'MongoDb.MongoDbSource')
-    // は次のようになる 
-    App::uses('MongoDbSource', 'MongoDb.Model/Datasource')
+    App::import('Datasource', 'MongoDb.MongoDbSource');
+    // は次のようになる
+    App::uses('MongoDbSource', 'MongoDb.Model/Datasource');
 
 以前 ``App::import('Core', $class);`` を用いて読み込んでいたすべてのクラスは、正しいパッケージを参照する ``App::uses()`` を用いて読み込む必要があります。
 APIを見て新しいフォルダでクラスを探索するようにしてください。いくつか例を挙げます::
 
-    <?php
     App::import('Core', 'CakeRoute');
-    // は次のようになる 
+    // は次のようになる
     App::uses('CakeRoute', 'Routing/Route');
 
     App::import('Core', 'Sanitize');
-    // は次のようになる 
+    // は次のようになる
     App::uses('Sanitize', 'Utility');
 
     App::import('Core', 'HttpSocket');
-    // は次のようになる 
+    // は次のようになる
     App::uses('HttpSocket', 'Network/Http');
 
 :php:meth:`App::import()` が以前どのように作用していたかとは対照的に、新しいクラスローダはクラスを再帰的に探索しません。
@@ -464,14 +467,13 @@ App::build() とコアのパス
 
 例::
 
-    <?php
-    App::build(array('controllers' => array('/full/path/to/controllers'))) 
-    // は次のようになる 
-    App::build(array('Controller' => array('/full/path/to/Controller')))
+    App::build(array('controllers' => array('/full/path/to/controllers')));
+    // は次のようになる
+    App::build(array('Controller' => array('/full/path/to/Controller')));
 
-    App::build(array('helpers' => array('/full/path/to/controllers'))) 
-    // は次のようになる 
-    App::build(array('View/Helper' => array('/full/path/to/View/Helper')))
+    App::build(array('helpers' => array('/full/path/to/controllers')));
+    // は次のようになる
+    App::build(array('View/Helper' => array('/full/path/to/View/Helper')));
 
 CakeLog
 -------
@@ -493,10 +495,9 @@ Cache
 
 ::
 
-    <?php
     Cache::config('something');
     Cache::write('key', $value);
-    
+
     // 上記は、以下のようになることでしょう。
     Cache::write('key', $value, 'something');
 
@@ -520,14 +521,12 @@ Router
   2.0では、 ``index`` アクションのみがショートカットルートとして与えられます。
   引き続きショートカットを利用したいと思う方は、以下のようにルートを追加できます::
 
-    <?php
     Router::connect('/users/:action', array('controller' => 'users', 'plugin' => 'users'));
-  
+
   ショートカットルートを有効にしたいプラグイン毎にroutesファイルにこれを追加してください。
 
 app/Config/routes.phpファイルは以下の行をファイルの後方に追加するように更新する必要があります::
 
-    <?php
     require CAKE . 'Config' . DS . 'routes.php';
 
 これはアプリケーションのデフォルトのルートを生成するために必要となります。
@@ -620,8 +619,7 @@ HttpSocket
 ClassRegistryからViewが削除されたことに対応して、Helper::__construct()の特性(*signature*)が変わりました。
 以下のものを使うようにサブクラスを更新する必要があります::
 
-    <?php
-    function __construct(View $View, $settings = array())
+    public function __construct(View $View, $settings = array())
 
 コンストラクタをオーバーライドするとき、常に `parent::__construct` を呼ぶ必要もあります。
 `Helper::__construct` はビューのインスタンスをのちの参照のために `$this->_View` に格納します。
@@ -842,7 +840,7 @@ View->Helpers
 テーマ
 ------
 
-コントローラでテーマを使うには、 ``var $view = 'Theme';`` と指定しないようになりました。
+コントローラでテーマを使うには、 ``public $view = 'Theme';`` と指定しないようになりました。
 代わりに ``public $viewClass = 'Theme';`` としてください。
 
 コールバックの位置の変更
@@ -860,20 +858,19 @@ beforeRenderもまた同様で、ビューでの変数全てが操作される�
 ヘルパーのコールバックは常に一つの引数、beforeRenderとafterRenderにはレンダリングされるビューファイルが、beforeLayoutとafterLayoutにはレンダリングされるレイアウトファイルが与えられるようになりました。
 ヘルパーの関数特性は以下のようにする必要があります::
 
-    <?php
-    function beforeRender($viewFile) {
+    public function beforeRender($viewFile) {
 
     }
 
-    function afterRender($viewFile) {
+    public function afterRender($viewFile) {
 
     }
 
-    function beforeLayout($layoutFile) {
+    public function beforeLayout($layoutFile) {
 
     }
 
-    function afterLayout($layoutFile) {
+    public function afterLayout($layoutFile) {
 
     }
 
@@ -944,21 +941,18 @@ PHPUnitによって全てのコマンドラインオプションがサポート�
 関連モデルは遅延読み込みが為されるようになりました。
 存在しないモデルのプロパティに値を割り当てようとすると、エラーを投げるような事態を垣間見ることが出来るでしょう::
 
-    <?php
     $Post->inexistentProperty[] = 'value';
 
 上記は「注意：オーバーロードされた（訳注：PHPのオーバーロードのこと）プロパティの$inexistentPropertyへの間接的な変更は効果がありません。」(*Notice: Indirect modification of overloaded property $inexistentProperty has no effect*)というエラーを投げることでしょう。
 以下のように、プロパティに初期値を与えることによってこの問題を解決できます::
 
-    <?php
     $Post->nonexistentProperty = array();
     $Post->nonexistentProperty[] = 'value';
 
 また、以下のようにモデルのクラスにプロパティを定義するだけでも解決できます::
 
-    <?php
     class Post {
-        public $nonexistantProperty = array();
+        public $nonexistentProperty = array();
     }
 
 これらのどちらかのアプローチでnoticeエラーを回避できることでしょう。
@@ -996,12 +990,10 @@ PDOを採用した後に追加された素晴らしい機能のうちの一つ�
 * DboSource::executeのAPIが変更されました。
   二番目の引数としてクエリの値の配列をとるようになりました::
 
-    <?php
     public function execute($sql, $params = array(), $options = array())
 
   上記が以下のようになりました::
 
-    <?php
     public function execute($sql, $options = array(), $params = array())
 
   第三引数はログのオプションを受け取ることを意味し、現在は「log」オプションのみ理解します。
@@ -1010,7 +1002,6 @@ PDOを採用した後に追加された素晴らしい機能のうちの一つ�
 * DboSource::fetchAll() は第二引数に配列を受け取ることができるようになり、クエリに結び付けられる値を渡します。
   第三引数は削除されました。例::
 
-    <?php
     $db->fetchAll('SELECT * from users where username = ? AND password = ?', array('jhon', '12345'));
     $db->fetchAll('SELECT * from users where username = :username AND password = :password', array('username' => 'jhon', 'password' => '12345'));
 
@@ -1037,6 +1028,9 @@ PDOドライバは自動的にこれらの値をエスケープします。
   従って、もし返り値を文字列や数値として期待しているなら、テストケースやコードを必ず書きなおしてください:
   例えば以前に「published」カラムを使っていなら、mysqlを使っていればfindから返ってくるの全ての値は以前数値でしたが、今は厳密に真偽値となりました。
 
+ビヘイビア
+==========
+
 BehaviorCollection
 ------------------
 
@@ -1048,7 +1042,6 @@ AclBehaviorとTreeBehavior
 
 - 設定として文字列をサポートしなくなりました。例::
 
-    <?php
     public $actsAs = array(
         'Acl' => 'Controlled',
         'Tree' => 'nested'
@@ -1056,7 +1049,6 @@ AclBehaviorとTreeBehavior
 
   こうなりました::
 
-    <?php
     public $actsAs = array(
         'Acl' => array('type' => 'Controlled'),
         'Tree' => array('type' => 'nested')
@@ -1068,14 +1060,12 @@ AclBehaviorとTreeBehavior
 プラグインはコンポーネント、ヘルパー、モデルに、マジックとして自身のプラグイン接頭辞を付け加えなくなりました。
 明示的に使いたいものを指定しなければなりません。以前は::
 
-    <?php
-    var $components = array('Session', 'Comments');
+    public $components = array('Session', 'Comments');
 
 とすると、アプリケーション・コアのコンポーネントをチェックする前にコントローラのプラグインを調べていたでしょう。
 これはアプリケーション・コアのコンポーネントのみを見るようになりました。
 プラグインからオブジェクトを使いたい場合は、プラグインの名前を指定しなければなりません::
 
-    <?php
     public $components = array('Session', 'Comment.Comments');
 
 これは、マジックの失敗によって起こされていた問題をデバッグすることの煩雑さを減らすために為されました。
@@ -1164,7 +1154,6 @@ ConnectionManager
 また、データソースがパッケージに移動したため、探索するためのパッケージを渡す必要があります。
 例を挙げます::
 
-    <?php
     public $default = array(
         'datasource' => 'Database/Mysql',
         'persistent' => false,

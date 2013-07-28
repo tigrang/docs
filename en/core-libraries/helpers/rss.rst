@@ -18,7 +18,6 @@ Before we jump too far ahead trying to get our webservice up and
 running we need to do a few things. First parseExtensions needs to
 be activated, this is done in ``app/Config/routes.php``::
 
-    <?php
     Router::parseExtensions('rss');
 
 In the call above we’ve activated the .rss extension. When using
@@ -35,13 +34,11 @@ Controller Code
 It is a good idea to add RequestHandler to your PostsController's
 $components array. This will allow a lot of automagic to occur::
 
-    <?php
     public $components = array('RequestHandler');
 
 Our view will also use the :php:class:`TextHelper` for formatting, so that
 should be added to the controller as well::
 
-    <?php
     public $helpers = array('Text');
 
 Before we can make an RSS version of our posts/index we need to get
@@ -54,7 +51,6 @@ make the RSS feed and the data for the html view you can use the
 :php:meth:`RequestHandler::isRss()` method, otherwise your controller can stay
 the same::
 
-    <?php
     // Modify the Posts Controller action that corresponds to
     // the action which deliver the rss feed, which is the
     // index action in our example
@@ -79,9 +75,8 @@ Layout
 ------
 
 An Rss layout is very simple, put the following contents in
-``app/View/Layout/rss/default.ctp``::
+``app/View/Layouts/rss/default.ctp``::
 
-    <?php
     if (!isset($documentData)) {
         $documentData = array();
     }
@@ -92,7 +87,7 @@ An Rss layout is very simple, put the following contents in
         $channelData['title'] = $title_for_layout;
     } 
     $channel = $this->Rss->channel(array(), $channelData, $content_for_layout);
-    echo $this->Rss->document($documentData,$channel);
+    echo $this->Rss->document($documentData, $channel);
 
 It doesn't look like much but thanks to the power in the ``RssHelper``
 it's doing a lot of lifting for us. We haven't set ``$documentData`` or
@@ -116,15 +111,12 @@ done by using the :php:meth:`View::set()`` method which is analogous to the
 Controller::set() method. Here though we are passing the channel's
 metadata back to the layout::
 
-    <?php
-    $this->set('documentData', array(
-        'xmlns:dc' => 'http://purl.org/dc/elements/1.1/'));
-
     $this->set('channelData', array(
         'title' => __("Most Recent Posts"),
         'link' => $this->Html->url('/', true),
         'description' => __("Most recent posts."),
-        'language' => 'en-us'));
+        'language' => 'en-us'
+    ));
 
 The second part of the view generates the elements for the actual
 records of the feed. This is accomplished by looping through the
@@ -147,7 +139,6 @@ associative array into an element for each key value pair.
 
 ::
 
-    <?php
     // You should import Sanitize
     App::uses('Sanitize', 'Utility');
 
@@ -179,7 +170,6 @@ associative array into an element for each key value pair.
             'link' => $postLink,
             'guid' => array('url' => $postLink, 'isPermaLink' => 'true'),
             'description' => $bodyText,
-            'dc:creator' => $post['Post']['author'],
             'pubDate' => $post['Post']['created']
         ));
     }

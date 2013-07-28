@@ -25,9 +25,8 @@ and other routes which would override the routes.
 If we wanted to allow REST access to a recipe database, we'd do
 something like this::
 
-    <?php
     //In app/Config/routes.php...
-        
+    
     Router::mapResources('recipes');
     Router::parseExtensions();
 
@@ -70,7 +69,6 @@ controller actions, we can move on to creating the logic in our
 controller actions. A basic controller might look something like
 this::
 
-    <?php
     // Controller/RecipesController.php
     class RecipesController extends AppController {
     
@@ -78,12 +76,18 @@ this::
     
         public function index() {
             $recipes = $this->Recipe->find('all');
-            $this->set(compact('recipes'));
+            $this->set(array(
+                'recipes' => $recipes,
+                '_serialize' => array('recipes')
+            ));
         }
     
         public function view($id) {
             $recipe = $this->Recipe->findById($id);
-            $this->set(compact('recipe'));
+            $this->set(array(
+                'recipe' => $recipe,
+                '_serialize' => array('recipe')
+            ));
         }
     
         public function edit($id) {
@@ -93,7 +97,10 @@ this::
             } else {
                 $message = 'Error';
             }
-            $this->set(compact("message"));
+            $this->set(array(
+                'message' => $message,
+                '_serialize' => array('message')
+            ));
         }
     
         public function delete($id) {
@@ -102,26 +109,33 @@ this::
             } else {
                 $message = 'Error';
             }
-            $this->set(compact("message"));
+            $this->set(array(
+                'message' => $message,
+                '_serialize' => array('message')
+            ));
         }
     }
 
 Since we've added a call to :php:meth:`Router::parseExtensions()`,
 the CakePHP router is already primed to serve up different views based on
 different kinds of requests. Since we're dealing with REST
-requests, the view type is XML. We place the REST views for our
-RecipesController inside ``app/View/recipes/xml``. We can also use
-:php:class:`Xml` for quick-and-easy XML output in those views. Here's what
+requests, we'll be making XML views.  You can also easily make JSON views using
+CakePHP's built in :doc:`/views/json-and-xml-views`. By using the built in
+:php:class:`XmlView` we can define a ``_serialize`` view variable.  This special
+view variable is used to define which view variables ``XmlView`` should
+serialize into XML.
+
+If we wanted to modify the data before it is converted into XML we should not
+define the ``_serialize`` view variable, and instead use view files. We place
+the REST views for our RecipesController inside ``app/View/recipes/xml``. We can also use
+the :php:class:`Xml` for quick-and-easy XML output in those views. Here's what
 our index view might look like::
 
     // app/View/Recipes/xml/index.ctp
-    
-    <recipes>
-        <?php
-        $xml = Xml::build($recipes);
-        echo $xml->saveXML();
-        ?>
-    </recipes>
+    // Do some formatting and manipulation on
+    // the $recipes array.
+    $xml = Xml::fromArray(array('response' => $recipes));
+    echo $xml->asXML();
 
 When serving up a specific content type using parseExtensions(),
 CakePHP automatically looks for a view helper that matches the type.
@@ -131,16 +145,16 @@ for our use in those views.
 
 The rendered XML will end up looking something like this::
 
-    <posts>
-        <post id="234" created="2008-06-13" modified="2008-06-14">
+    <recipes>
+        <recipe id="234" created="2008-06-13" modified="2008-06-14">
             <author id="23423" first_name="Billy" last_name="Bob"></author>
-            <comment id="245" body="This is a comment for this post."></comment>
-        </post>
-        <post id="3247" created="2008-06-15" modified="2008-06-15">
+            <comment id="245" body="Yummy yummmy"></comment>
+        </recipe>
+        <recipe id="3247" created="2008-06-15" modified="2008-06-15">
             <author id="625" first_name="Nate" last_name="Johnson"></author>
-            <comment id="654" body="This is a comment for this post."></comment>
-        </post>
-    </posts>
+            <comment id="654" body="This is a comment for this tasty dish."></comment>
+        </recipe>
+    </recipes>
 
 Creating the logic for the edit action is a bit trickier, but not
 by much. Since you're providing an API that outputs XML, it's a
@@ -164,17 +178,16 @@ and supply the array version of that data in `$this->request->data`.
 You can also wire in additional deserializers for alternate formats if you
 need them, using :php:meth:`RequestHandler::addInputType()`
 
-Modifing the default REST routes
-================================
+Modifying the default REST routes
+=================================
 
 .. versionadded:: 2.1
 
-If the default REST routes dont' work for your application, you can modify them
+If the default REST routes don't work for your application, you can modify them
 using :php:meth:`Router::resourceMap()`.  This method allows you to set the
 default routes that get set with :php:meth:`Router::mapResources()`.  When using
 this method you need to set *all* the defaults you want to use::
 
-    <?php
     Router::resourceMap(array(
         array('action' => 'index', 'method' => 'GET', 'id' => false),
         array('action' => 'view', 'method' => 'GET', 'id' => true),
@@ -194,28 +207,7 @@ Custom REST Routing
 If the default routes created by :php:meth:`Router::mapResources()` don't work
 for you, use the :php:meth:`Router::connect()` method to define a custom set of
 REST routes. The ``connect()`` method allows you to define a number of different
-options for a given URL. The first parameter is the URL itself, and the second
-parameter allows you to supply those options. The third parameter allows you to
-specify regex patterns to help CakePHP identify certain markers in the specified
-URL.
-
-We'll provide a simple example here, and allow you to tailor this
-route for your other RESTful purposes. Here's what our edit REST
-route would look like, without using :php:meth:`Router::mapResources()`::
-
-    <?php
-    Router::connect(
-        "/:controller/:id",
-        array("action" => "edit", "[method]" => "PUT"),
-        array("id" => "[0-9]+")
-    );
-
-Advanced routing techniques are covered elsewhere, so we'll focus
-on the most important point for our purposes here: the [method] key
-of the options array in the second parameter. Once that key has
-been set, the specified route works only for that HTTP request
-method (which could also be GET, DELETE, etc.)
-
+options for a given URL. See the section on :ref:`route-conditions` for more information.
 
 .. meta::
     :title lang=en: REST

@@ -65,7 +65,7 @@ past and load files it should not.
 Folder Names
 ------------
 
-Most folders should be also CamelCased, especially when containing classes. 
+Most folders should be also CamelCased, especially when containing classes.
 Think of namespaces, each folder represents a level in the namespacing
 hierarchy, folders that do not contain classes, or do not constitute a
 namespace on themselves, should be lowercased.
@@ -93,13 +93,13 @@ lowercased Folders:
 
 htaccess (URL Rewriting)
 ===============================================
-In your ``app/webroot/.htaccess`` replace line ``RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]`` with ``RewriteRule ^(.*)$ index.php?/$1 [QSA,L]``
+In your ``app/webroot/.htaccess`` replace line ``RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]`` with ``RewriteRule ^(.*)$ index.php [QSA,L]``
 
 AppController / AppModel / AppHelper / AppShell
 ===============================================
 
-The ``app/app_controller.php``, ``app/app_model.php``, ``app/app_helper.php`` are now located and 
-named as ``app/Controller/AppController.php``, ``app/Model/AppModel.php`` and ``app/Helper/AppHelper.php`` respectively.
+The ``app/app_controller.php``, ``app/app_model.php``, ``app/app_helper.php`` are now located and
+named as ``app/Controller/AppController.php``, ``app/Model/AppModel.php`` and ``app/View/Helper/AppHelper.php`` respectively.
 
 Also all shell/task now extend AppShell. You can have your custom AppShell.php at ``app/Console/Command/AppShell.php``
 
@@ -111,9 +111,8 @@ Internationalization / Localization
 
 If you want to echo the result of the translation, use::
 
-    <?php
     echo __('My Message');
-    
+
 This change includes all shortcut translation methods::
 
     __()
@@ -128,7 +127,6 @@ Alongside this, if you pass additional parameters, the translation will call
 `sprintf <http://php.net/manual/en/function.sprintf.php>`_  with these
 parameters before returning. For example::
 
-    <?php
     // Will return something like "Called: MyClass:myMethod"
     echo __('Called: %s:%s', $className, $methodName);
 
@@ -161,7 +159,7 @@ Basics.php
 -  ``uses()`` was removed. Use ``App::import()`` instead.
 -  Compatibility functions for PHP4 have been removed.
 -  PHP5 constant has been removed.
--  Global var called ``$TIME_START`` was removed use the constant 
+-  Global var called ``$TIME_START`` was removed use the constant
    ``TIME_START`` or ``$_SERVER['REQUEST_TIME']`` instead.
 
 Removed Constants
@@ -208,6 +206,12 @@ of these changes, you'll need to update your .htaccess files and
 ``app/webroot/index.php``, as these files were changed to accommodate the
 changes. Additionally ``$this->params['url']['url']`` no longer exists. Instead
 you should be using $this->request->url to access the same value.
+This attribute now contains the url without the leading slash ``/`` prepended.
+
+Note: For the homepage itself (``http://domain/``) $this->request->url now returns
+boolean ``false`` instead of ``/``. Make sure you check on that accordingly::
+
+    if (!$this->request->url) {} // instead of $this->request->url === '/'
 
 Components
 ==========
@@ -215,9 +219,8 @@ Components
 Component is now the required base class for all components. You should update
 your components and their constructors, as both have changed::
 
-    <?php
     class PrgComponent extends Component {
-        function __construct(ComponentCollection $collection, $settings = array()) {
+        public function __construct(ComponentCollection $collection, $settings = array()) {
             parent::__construct($collection, $settings);
         }
     }
@@ -232,7 +235,7 @@ Since settings have been moved to the component constructor, the
 ``initialize()`` callback no longer receives ``$settings`` as its 2nd parameter.
 You should update your components to use the following method signature::
 
-    function initialize($controller) { }
+    public function initialize(Controller $controller) { }
 
 Additionally, the initialize() method is only called on components that are
 enabled.  This usually means components that are directly attached to the
@@ -245,7 +248,6 @@ All the deprecated callbacks in Component have not been transferred to
 ComponentCollection. Instead you should use the `trigger()` method to interact
 with callbacks.  If you need to trigger a callback you could do so by calling::
 
-    <?php
     $this->Components->trigger('someCallback', array(&$this));
 
 Changes in disabling components
@@ -315,7 +317,7 @@ AuthComponent
 
 The AuthComponent was entirely re-factored for 2.0, this was done to help reduce
 developer confusion and frustration. In addition, AuthComponent was made more
-flexible and extensible. You can find out more in 
+flexible and extensible. You can find out more in
 the :doc:`/core-libraries/components/authentication` guide.
 
 EmailComponent
@@ -425,11 +427,10 @@ App::core()
 Class loading with App::uses()
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Although there has been a huge refactoring in how the classes are loaded, in very 
-few occasions you will need to change your application code to respect the way you were 
+Although there has been a huge refactoring in how the classes are loaded, in very
+few occasions you will need to change your application code to respect the way you were
 used to doing it. The biggest change is the introduction of a new method::
 
-    <?php
     App::uses('AuthComponent', 'Controller/Component');
 
 We decided the function name should emulate PHP 5.3's ``use`` keyword, just as a way
@@ -443,34 +444,32 @@ is used for the first time it will be located.
 Some examples on using :php:meth:`App::uses()` when migrating from
 :php:meth:`App::import()`::
 
-    <?php
     App::import('Controller', 'Pages');
-    // becomes 
+    // becomes
     App::uses('PagesController', 'Controller');
 
-    App::import('Component', 'Email');
-    // becomes 
-    App::uses('EmailComponent', 'Controller/Component');
+    App::import('Component', 'Auth');
+    // becomes
+    App::uses('AuthComponent', 'Controller/Component');
 
     App::import('View', 'Media');
-    // becomes 
+    // becomes
     App::uses('MediaView', 'View');
 
     App::import('Core', 'Xml');
-    // becomes 
+    // becomes
     App::uses('Xml', 'Utility');
 
-    App::import('Datasource', 'MongoDb.MongoDbSource')
-    // becomes 
-    App::uses('MongoDbSource', 'MongoDb.Model/Datasource')
+    App::import('Datasource', 'MongoDb.MongoDbSource');
+    // becomes
+    App::uses('MongoDbSource', 'MongoDb.Model/Datasource');
 
 All classes that were loaded in the past using ``App::import('Core', $class);``
 will need to be loaded using ``App::uses()`` referring to the correct package.
 See the api to locate the classes in their new folders. Some examples::
 
-    <?php
     App::import('Core', 'CakeRoute');
-    // becomes 
+    // becomes
     App::uses('CakeRoute', 'Routing/Route');
 
     App::import('Core', 'Sanitize');
@@ -478,7 +477,7 @@ See the api to locate the classes in their new folders. Some examples::
     App::uses('Sanitize', 'Utility');
 
     App::import('Core', 'HttpSocket');
-    // becomes 
+    // becomes
     App::uses('HttpSocket', 'Network/Http');
 
 In contrast to how :php:meth:`App::import()` worked in the past, the new class
@@ -494,14 +493,13 @@ App::build() and core paths
 
 Examples::
 
-    <?php
-    App::build(array('controllers' => array('/full/path/to/controllers'))) 
-    //becomes 
-    App::build(array('Controller' => array('/full/path/to/Controller')))
+    App::build(array('controllers' => array('/full/path/to/controllers')));
+    //becomes
+    App::build(array('Controller' => array('/full/path/to/Controller')));
 
-    App::build(array('helpers' => array('/full/path/to/controllers'))) 
-    //becomes 
-    App::build(array('View/Helper' => array('/full/path/to/View/Helper')))
+    App::build(array('helpers' => array('/full/path/to/controllers')));
+    //becomes
+    App::build(array('View/Helper' => array('/full/path/to/View/Helper')));
 
 CakeLog
 -------
@@ -513,7 +511,7 @@ Cache
 -----
 
 -  :php:class:`Cache` is now a static class, it no longer has a getInstance() method.
--  CacheEngine is now an abstract class. You cannot directly create instances of 
+-  CacheEngine is now an abstract class. You cannot directly create instances of
    it anymore.
 -  CacheEngine implementations must extend CacheEngine, exceptions will be
    raised if a configured class does not.
@@ -526,10 +524,9 @@ Cache
 
 ::
 
-    <?php
     Cache::config('something');
     Cache::write('key', $value);
-    
+
     // would become
     Cache::write('key', $value, 'something');
 
@@ -546,7 +543,7 @@ Router
   ``Router::DAY``, ``Router::ID``, and ``Router::UUID`` instead.
 - ``Router::defaults()`` has been removed.  Delete the core routes file
   inclusion from your applications routes.php file to disable default routing.
-  Conversely if you want default routing, you will have to add an include to 
+  Conversely if you want default routing, you will have to add an include to
   ``Cake/Config/routes.php`` in your routes file.
 - When using Router::parseExtensions() the extension parameter is no longer
   under ``$this->params['url']['ext']``. Instead it is available at
@@ -557,14 +554,12 @@ Router
   ``index`` action is given a short route.  If you wish to continue using short
   routes, you can add a route like::
 
-    <?php
     Router::connect('/users/:action', array('controller' => 'users', 'plugin' => 'users'));
-  
+
   To your routes file for each plugin you need short routes on.
 
 Your app/Config/routes.php file needs to be updated adding this line at the bottom of the file::
 
-    <?php
     require CAKE . 'Config' . DS . 'routes.php';
 
 This is needed in order to generate the default routes for your application. If you do not wish to have such routes,
@@ -590,7 +585,7 @@ Configure
 -  ``Configure::read()`` with no parameter no longer returns the value of
    'debug' instead it returns all values in Configure. Use
    ``Configure::read('debug');`` if you want the value of debug.
--  ``Configure::load()`` now requires a ConfigReader to be setup. Read 
+-  ``Configure::load()`` now requires a ConfigReader to be setup. Read
    :ref:`loading-configuration-files` for more information.
 -  ``Configure::store()`` now writes values to a given Cache configuration. Read
    :ref:`loading-configuration-files` for more information.
@@ -663,8 +658,7 @@ In order to accommodate View being removed from the ClassRegistry, the signature
 of Helper::__construct() was changed.  You should update any subclasses to use
 the following::
 
-    <?php
-    function __construct(View $View, $settings = array())
+    public function __construct(View $View, $settings = array())
 
 When overriding the constructor you should always call `parent::__construct` as
 well.  `Helper::__construct` stores the view instance at `$this->_View` for
@@ -815,8 +809,8 @@ Note that ``checked`` have a numeric key.
 Controller
 ==========
 
-- Controller's constructor now takes two parameters. A CakeRequest, and 
-  CakeResponse objects. These objects are used to populate several deprecated 
+- Controller's constructor now takes two parameters. A CakeRequest, and
+  CakeResponse objects. These objects are used to populate several deprecated
   properties and will be set to $request and $response inside the controller.
 - ``Controller::$webroot`` is deprecated, use the request object's webroot
   property.
@@ -895,7 +889,7 @@ you update your application.
 Removed methods
 ---------------
 
-* ``View::_triggerHelpers()`` Use ``$this->Helpers->trigger()`` instead.  
+* ``View::_triggerHelpers()`` Use ``$this->Helpers->trigger()`` instead.
 * ``View::_loadHelpers()`` Use ``$this->loadHelpers()`` instead.  Helpers now lazy
   load their own helpers.
 
@@ -913,7 +907,7 @@ By default View objects contain a :php:class:`HelperCollection` at ``$this->Help
 Themes
 ------
 
-To use themes in your Controller you no longer set ``var $view = 'Theme';``. 
+To use themes in your Controller you no longer set ``public $view = 'Theme';``.
 Use ``public $viewClass = 'Theme';`` instead.
 
 Callback positioning changes
@@ -936,20 +930,19 @@ afterRender it is the view file being rendered. For beforeLayout and afterLayout
 it is the layout file being rendered. Your helpers function signatures should
 look like::
 
-    <?php
-    function beforeRender($viewFile) {
+    public function beforeRender($viewFile) {
 
     }
 
-    function afterRender($viewFile) {
+    public function afterRender($viewFile) {
 
     }
 
-    function beforeLayout($layoutFile) {
+    public function beforeLayout($layoutFile) {
 
     }
 
-    function afterLayout($layoutFile) {
+    public function afterLayout($layoutFile) {
 
     }
 
@@ -1028,20 +1021,17 @@ Models
 Model relationships are now lazy loaded. You can run into a situation where
 assigning a value to a nonexistent model property will throw errors::
 
-    <?php
     $Post->inexistentProperty[] = 'value';
 
 will throw the error "Notice: Indirect modification of overloaded property
 $inexistentProperty has no effect". Assigning an initial value to the property
 solves the issue::
 
-    <?php
     $Post->nonexistentProperty = array();
     $Post->nonexistentProperty[] = 'value';
 
 Or just declare the property in the model class::
 
-    <?php
     class Post {
         public $nonexistentProperty = array();
     }
@@ -1073,7 +1063,7 @@ The first thing users will probably miss is the "affected rows" and "total rows"
 statistics, as they are not reported due to the more performant and lazy design
 of PDO, there are ways to overcome this issue but very specific to each
 database. Those statistics are not gone, though, but could be missing or even
-inaccurate for some drivers. 
+inaccurate for some drivers.
 
 A nice feature added after the PDO adoption is the ability to use prepared
 statements with query placeholders using the native driver if available.
@@ -1085,12 +1075,10 @@ List of Changes
 * API for DboSource::execute has changed, it will now take an array of query
   values as second parameter::
 
-    <?php
     public function execute($sql, $params = array(), $options = array())
 
   became::
 
-    <?php
     public function execute($sql, $options = array(), $params = array())
 
   third parameter is meant to receive options for logging, currently it only
@@ -1100,7 +1088,6 @@ List of Changes
 * DboSource::fetchAll() now accepts an array as second parameter, to pass values
   to be bound to the query, third parameter was dropped. Example::
 
-    <?php
     $db->fetchAll('SELECT * from users where username = ? AND password = ?', array('jhon', '12345'));
     $db->fetchAll('SELECT * from users where username = :username AND password = :password', array('username' => 'jhon', 'password' => '12345'));
 
@@ -1132,6 +1119,9 @@ The PDO driver will automatically escape those values for you.
   the past using mysql all values returned from a find would be numeric in the
   past, now they are strict boolean values.
 
+Behaviors
+=========
+
 BehaviorCollection
 ------------------
 
@@ -1143,7 +1133,6 @@ AclBehavior and TreeBehavior
 
 - No longer supports strings as configuration. Example::
 
-    <?php
     public $actsAs = array(
         'Acl' => 'Controlled',
         'Tree' => 'nested'
@@ -1151,7 +1140,6 @@ AclBehavior and TreeBehavior
 
   became::
 
-    <?php
     public $actsAs = array(
         'Acl' => array('type' => 'Controlled'),
         'Tree' => array('type' => 'nested')
@@ -1165,14 +1153,12 @@ Plugins no longer magically append their plugin prefix to components, helpers
 and models used within them. You must be explicit with the components, models,
 and helpers you wish to use. In the past::
 
-    <?php
-    var $components = array('Session', 'Comments');
+    public $components = array('Session', 'Comments');
 
 Would look in the controller's plugin before checking app/core components. It
 will now only look in the app/core components. If you wish to use objects from a
 plugin you must put the plugin name::
 
-    <?php
     public $components = array('Session', 'Comment.Comments');
 
 This was done to reduce hard to debug issues caused by magic misfiring. It also
@@ -1182,8 +1168,8 @@ reference them.
 Plugin App Controller and Plugin App Model
 ------------------------------------------
 
-The plugin AppController and AppModel are no longer located directly in the 
-plugin folder. They are now placed into the plugin's Controller and Model 
+The plugin AppController and AppModel are no longer located directly in the
+plugin folder. They are now placed into the plugin's Controller and Model
 folders as such::
 
     /app
@@ -1270,7 +1256,6 @@ the key "driver" is not accepted anymore, only "datasource", in order to make it
 more consistent. Also, as the datasources have been moved to packages you will
 need to pass the package they are located in. Example::
 
-    <?php
     public $default = array(
         'datasource' => 'Database/Mysql',
         'persistent' => false,

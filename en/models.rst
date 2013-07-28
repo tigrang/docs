@@ -32,7 +32,7 @@ Comment are all examples of models, each associated with another.
 
 Here is a simple example of a model definition in CakePHP::
 
-    <?php
+    App::uses('AppModel', 'Model');
     class Ingredient extends AppModel {
         public $name = 'Ingredient';
     }
@@ -43,7 +43,8 @@ saving and deleting data. These magic methods come from CakePHP's
 Model class by the magic of inheritance. The Ingredient model
 extends the application model, AppModel, which extends CakePHP's
 internal Model class. It is this core Model class that bestows the
-functionality onto your Ingredient model.
+functionality onto your Ingredient model. ``App::uses('AppModel', 'Model')``
+ensures that the model is lazy loaded in every instance of its usage.
 
 This intermediate class, AppModel, is empty and if you haven't
 created your own, is taken from within the CakePHP core folder. Overriding
@@ -88,7 +89,6 @@ the controller. For example, a controller named
 IngredientsController will automatically initialize the Ingredient
 model and attach it to the controller at ``$this->Ingredient``::
 
-    <?php
     class IngredientsController extends AppController {
         public function index() {
             //grab all ingredients and pass it to the view:
@@ -101,7 +101,6 @@ Associated models are available through the main model. In the
 following example, Recipe has an association with the Ingredient
 model::
 
-    <?php
     class Recipe extends AppModel {
 
         public function steakRecipes() {

@@ -47,15 +47,13 @@ multidimensional array used to define association specifics.
 
 ::
 
-    <?php
     class User extends AppModel {
-        public $name = 'User';
         public $hasOne = 'Profile';
         public $hasMany = array(
             'Recipe' => array(
-                'className'  => 'Recipe',
+                'className' => 'Recipe',
                 'conditions' => array('Recipe.approved' => '1'),
-                'order'      => 'Recipe.created DESC'
+                'order' => 'Recipe.created DESC'
             )
         );
     }
@@ -64,47 +62,61 @@ In the above example, the first instance of the word 'Recipe' is
 what is termed an 'Alias'. This is an identifier for the
 relationship and can be anything you choose. Usually, you will
 choose the same name as the class that it references. However,
-**aliases for each model must be unique app wide**. E.g. it is
+**aliases for each model must be unique app wide**. For example it is
 appropriate to have::
 
-    <?php
     class User extends AppModel {
-        public $name = 'User';
-        public $hasMany = array(
-            'MyRecipe' => array('className' => 'Recipe'),
-        );
-        public $hasAndBelongsToMany => array('Member' => array('className' => 'User'));
-    }
-    
-    class Group extends AppModel {
-        public $name = 'Group';
         public $hasMany = array(
             'MyRecipe' => array(
-                'className'  => 'Recipe',
+                'className' => 'Recipe',
             )
         );
-        public $hasAndBelongsToMany => array('MemberOf' => array('className' => 'Group'));
-    }
-
-but the following will not work well in all circumstances:::
-
-    <?php
-    class User extends AppModel {
-        public $name = 'User';
-        public $hasMany = array(
-            'MyRecipe' => 'Recipe',
+        public $hasAndBelongsToMany = array(
+            'MemberOf' => array(
+                'className' => 'Group',
+            )
         );
-        public $hasAndBelongsToMany => array('Member' => 'User');
     }
-    
+
     class Group extends AppModel {
-        public $name = 'Group';
         public $hasMany = array(
             'MyRecipe' => array(
-                'className'  => 'Recipe',
+                'className' => 'Recipe',
             )
         );
-        public $hasAndBelongsToMany => array('Member' => 'Group');
+        public $hasAndBelongsToMany = array(
+            'Member' => array(
+                'className' => 'User',
+            )
+        );
+    }
+
+but the following will not work well in all circumstances::
+
+    class User extends AppModel {
+        public $hasMany = array(
+            'MyRecipe' => array(
+                'className' => 'Recipe',
+            )
+        );
+        public $hasAndBelongsToMany = array(
+            'Member' => array(
+                'className' => 'Group',
+            )
+        );
+    }
+
+    class Group extends AppModel {
+        public $hasMany = array(
+            'MyRecipe' => array(
+                'className' => 'Recipe',
+            )
+        );
+        public $hasAndBelongsToMany = array(
+            'Member' => array(
+                'className' => 'User',
+            )
+        );
     }
 
 because here we have the alias 'Member' referring to both the User
@@ -116,13 +128,11 @@ Cake will automatically create links between associated model
 objects. So for example in your ``User`` model you can access the
 ``Recipe`` model as::
 
-    <?php
     $this->Recipe->someFunction();
 
 Similarly in your controller you can access an associated model
 simply by following your model associations::
 
-    <?php
     $this->User->Recipe->someFunction();
 
 .. note::
@@ -146,11 +156,11 @@ table will contain a field called user\_id. The basic pattern is:
 **hasOne:** the *other* model contains the foreign key.
 
 ==================== ==================
-Relation             Schema            
+Relation             Schema
 ==================== ==================
-Apple hasOne Banana  bananas.apple\_id 
+Apple hasOne Banana  bananas.apple\_id
 -------------------- ------------------
-User hasOne Profile  profiles.user\_id 
+User hasOne Profile  profiles.user\_id
 -------------------- ------------------
 Doctor hasOne Mentor mentors.doctor\_id
 ==================== ==================
@@ -166,9 +176,7 @@ define the ‘User hasOne Profile’ association, add the $hasOne
 property to the model class. Remember to have a Profile model in
 /app/Model/Profile.php, or the association won’t work::
 
-    <?php
     class User extends AppModel {
-        public $name = 'User';
         public $hasOne = 'Profile';
     }
 
@@ -183,14 +191,12 @@ to include only certain records.
 
 ::
 
-    <?php
     class User extends AppModel {
-        public $name = 'User';
         public $hasOne = array(
             'Profile' => array(
-                'className'    => 'Profile',
-                'conditions'   => array('Profile.published' => '1'),
-                'dependent'    => true
+                'className' => 'Profile',
+                'conditions' => array('Profile.published' => '1'),
+                'dependent' => true
             )
         );
     }
@@ -222,7 +228,7 @@ Once this association has been defined, find operations on the User
 model will also fetch a related Profile record if it exists::
 
     //Sample results from a $this->User->find() call.
-    
+
     Array
     (
         [User] => Array
@@ -272,22 +278,18 @@ Mentor belongsTo Doctor mentors.doctor\_id
 We can define the belongsTo association in our Profile model at
 /app/Model/Profile.php using the string syntax as follows::
 
-    <?php
     class Profile extends AppModel {
-        public $name = 'Profile';
         public $belongsTo = 'User';
     }
 
 We can also define a more specific relationship using array
 syntax::
 
-    <?php
     class Profile extends AppModel {
-        public $name = 'Profile';
         public $belongsTo = array(
             'User' => array(
-                'className'    => 'User',
-                'foreignKey'   => 'user_id'
+                'className' => 'User',
+                'foreignKey' => 'user_id'
             )
         );
     }
@@ -321,14 +323,7 @@ Possible keys for belongsTo association arrays include:
    whenever you do a ``save()`` or ``delete()``. If it's a string then it's the
    field name to use. The value in the counter field represents the
    number of related rows. You can also specify multiple counter caches
-   by using an array where the key is field name and value is the
-   conditions. E.g.::
-
-       array(
-           'recipes_count' => true,
-           'recipes_published' => array('Recipe.published' => 1)
-       )
-
+   by defining an array, see :ref:`multiple-counterCache`
 -  **counterScope**: Optional conditions array to use for updating
    counter cache field.
 
@@ -336,7 +331,7 @@ Once this association has been defined, find operations on the
 Profile model will also fetch a related User record if it exists::
 
     //Sample results from a $this->Profile->find() call.
-    
+
     Array
     (
        [Profile] => Array
@@ -345,7 +340,7 @@ Profile model will also fetch a related User record if it exists::
                 [user_id] => 121
                 [skill] => Baking Cakes
                 [created] => 2007-05-01 10:31:01
-            )    
+            )
         [User] => Array
             (
                 [id] => 121
@@ -379,28 +374,24 @@ Product hasMany Option  Option.product\_id
 We can define the hasMany association in our User model at
 /app/Model/User.php using the string syntax as follows::
 
-    <?php
     class User extends AppModel {
-        public $name = 'User';
         public $hasMany = 'Comment';
     }
 
 We can also define a more specific relationship using array
 syntax::
 
-    <?php
     class User extends AppModel {
-        public $name = 'User';
         public $hasMany = array(
             'Comment' => array(
-                'className'     => 'Comment',
-                'foreignKey'    => 'user_id',
-                'conditions'    => array('Comment.status' => '1'),
-                'order'         => 'Comment.created DESC',
-                'limit'         => '5',
-                'dependent'     => true
+                'className' => 'Comment',
+                'foreignKey' => 'user_id',
+                'conditions' => array('Comment.status' => '1'),
+                'order' => 'Comment.created DESC',
+                'limit' => '5',
+                'dependent' => true
             )
-        );  
+        );
     }
 
 Possible keys for hasMany association arrays include:
@@ -443,9 +434,9 @@ Once this association has been defined, find operations on the User
 model will also fetch related Comment records if they exist::
 
     //Sample results from a $this->User->find() call.
-    
+
     Array
-    (  
+    (
         [User] => Array
             (
                 [id] => 121
@@ -496,7 +487,7 @@ by a underscore and the word "count"::
     my_model_count
 
 Let's say you have a model called ``ImageComment`` and a model
-called ``Image``, you would add a new INT-field to the ``image``
+called ``Image``, you would add a new INT-field to the ``images``
 table and name it ``image_comment_count``.
 
 Here are some more examples:
@@ -515,16 +506,20 @@ Once you have added the counter field you are good to go. Activate
 counter-cache in your association by adding a ``counterCache`` key
 and set the value to ``true``::
 
-    <?php
-    class Image extends AppModel {
+    class ImageComment extends AppModel {
         public $belongsTo = array(
-            'ImageAlbum' => array('counterCache' => true)
+            'Image' => array(
+                'counterCache' => true,
+            )
         );
     }
 
-From now on, every time you add or remove a ``Image`` associated to
-``ImageAlbum``, the number within ``image_count`` is adjusted
+From now on, every time you add or remove a ``ImageComment`` associated to
+``Image``, the number within ``image_comment_count`` is adjusted
 automatically.
+
+counterScope
+============
 
 You can also specify ``counterScope``. It allows you to specify a
 simple condition which tells the model when to update (or when not
@@ -532,13 +527,46 @@ to, depending on how you look at it) the counter value.
 
 Using our Image model example, we can specify it like so::
 
-    <?php
-    class Image extends AppModel {
+    class ImageComment extends AppModel {
         public $belongsTo = array(
-            'ImageAlbum' => array(
+            'Image' => array(
                 'counterCache' => true,
                 'counterScope' => array('Image.active' => 1) // only count if "Image" is active = 1
-        ));
+            )
+        );
+    }
+
+.. _multiple-counterCache:
+
+Multiple counterCache
+=====================
+
+Since 2.0 CakePHP supports having multiple ``counterCache`` in a single model
+relation. It is also possible to define a ``counterScope`` for each ``counterCache``.
+Assuming you have a ``User`` model and a ``Message`` model and you want to be able
+to count the amount of read and unread messages for each user.
+
+========= ====================== ===========================================
+Model     Field                  Description
+========= ====================== ===========================================
+User      users.messages\_read   Count read ``Message``
+--------- ---------------------- -------------------------------------------
+User      users.messages\_unread Count unread ``Message``
+--------- ---------------------- -------------------------------------------
+Message   messages.is\_read      Determines if a ``Message`` is read or not.
+========= ====================== ===========================================
+
+With this setup your ``belongsTo`` would look like this::
+
+    class Message extends AppModel {
+        public $belongsTo = array(
+            'User' => array(
+                'counterCache' => array(
+                    'messages_read' => array('Message.is_read' => 1),
+                    'messages_unread' => array('Message.is_read' => 0)
+                )
+            )
+        );
     }
 
 hasAndBelongsToMany (HABTM)
@@ -601,25 +629,24 @@ Once this new table has been created, we can define the HABTM
 association in the model files. We're gonna skip straight to the
 array syntax this time::
 
-    <?php
     class Recipe extends AppModel {
-        public $name = 'Recipe';   
         public $hasAndBelongsToMany = array(
             'Ingredient' =>
                 array(
-                    'className'              => 'Ingredient',
-                    'joinTable'              => 'ingredients_recipes',
-                    'foreignKey'             => 'recipe_id',
-                    'associationForeignKey'  => 'ingredient_id',
-                    'unique'                 => true,
-                    'conditions'             => '',
-                    'fields'                 => '',
-                    'order'                  => '',
-                    'limit'                  => '',
-                    'offset'                 => '',
-                    'finderQuery'            => '',
-                    'deleteQuery'            => '',
-                    'insertQuery'            => ''
+                    'className' => 'Ingredient',
+                    'joinTable' => 'ingredients_recipes',
+                    'foreignKey' => 'recipe_id',
+                    'associationForeignKey' => 'ingredient_id',
+                    'unique' => true,
+                    'conditions' => '',
+                    'fields' => '',
+                    'order' => '',
+                    'limit' => '',
+                    'offset' => '',
+                    'finderQuery' => '',
+                    'deleteQuery' => '',
+                    'insertQuery' => '',
+                    'with' => ''
                 )
         );
     }
@@ -679,9 +706,9 @@ Once this association has been defined, find operations on the
 Recipe model will also fetch related Tag records if they exist::
 
     // Sample results from a $this->Recipe->find() call.
-    
+
     Array
-    (  
+    (
         [Recipe] => Array
             (
                 [id] => 2745
@@ -764,29 +791,28 @@ otherwise known as a **hasMany through** association.
 That is, the association is a model itself. So, we can create a new
 model CourseMembership. Take a look at the following models.::
 
-            <?php
             // Student.php
             class Student extends AppModel {
                 public $hasMany = array(
                     'CourseMembership'
                 );
-            }      
-            
+            }
+
             // Course.php
-            
+
             class Course extends AppModel {
                 public $hasMany = array(
                     'CourseMembership'
                 );
             }
-            
+
             // CourseMembership.php
-    
+
             class CourseMembership extends AppModel {
                 public $belongsTo = array(
                     'Student', 'Course'
                 );
-            }   
+            }
 
 The CourseMembership join model uniquely identifies a given
 Student's participation on a Course in addition to extra
@@ -817,18 +843,15 @@ section about Built-in behaviors for more information). Let's set
 up a few models so we can see how bindModel() and unbindModel()
 work. We'll start with two models::
 
-    <?php
     class Leader extends AppModel {
-        public $name = 'Leader';
-        
         public $hasMany = array(
             'Follower' => array(
                 'className' => 'Follower',
-                'order'     => 'Follower.rank'
+                'order' => 'Follower.rank'
             )
         );
     }
-    
+
     class Follower extends AppModel {
         public $name = 'Follower';
     }
@@ -840,26 +863,25 @@ can see above, the association array in the Leader model defines a
 purposes, let's use unbindModel() to remove that association in a
 controller action::
 
-    <?php
     public function some_action() {
         // This fetches Leaders, and their associated Followers
         $this->Leader->find('all');
-      
+
         // Let's remove the hasMany...
         $this->Leader->unbindModel(
             array('hasMany' => array('Follower'))
         );
-      
-        // Now using a find function will return 
+
+        // Now using a find function will return
         // Leaders, with no Followers
         $this->Leader->find('all');
-      
-        // NOTE: unbindModel only affects the very next 
-        // find function. An additional find call will use 
+
+        // NOTE: unbindModel only affects the very next
+        // find function. An additional find call will use
         // the configured association information.
-      
-        // We've already used find('all') after unbindModel(), 
-        // so this will fetch Leaders with associated 
+
+        // We've already used find('all') after unbindModel(),
+        // so this will fetch Leaders with associated
         // Followers once again...
         $this->Leader->find('all');
     }
@@ -874,7 +896,6 @@ controller action::
 
 Here’s the basic usage pattern for unbindModel()::
 
-    <?php
     $this->Model->unbindModel(
         array('associationType' => array('associatedModelClassName'))
     );
@@ -887,14 +908,13 @@ Principles to our Leader on the fly (but remember–only for just the
 following find operation). This function appears in the
 LeadersController::
 
-    <?php
     public function another_action() {
-        // There is no Leader hasMany Principles in 
-        // the leader.php model file, so a find here, 
+        // There is no Leader hasMany Principles in
+        // the leader.php model file, so a find here,
         // only fetches Leaders.
         $this->Leader->find('all');
-     
-        // Let's use bindModel() to add a new association 
+
+        // Let's use bindModel() to add a new association
         // to the Leader model:
         $this->Leader->bindModel(
             array('hasMany' => array(
@@ -904,9 +924,9 @@ LeadersController::
                 )
             )
         );
-     
-        // Now that we're associated correctly, 
-        // we can use a single find function to fetch 
+
+        // Now that we're associated correctly,
+        // we can use a single find function to fetch
         // Leaders with their associated principles:
         $this->Leader->find('all');
     }
@@ -916,7 +936,6 @@ encapsulation of a normal association array inside an array whose
 key is named after the type of association you are trying to
 create::
 
-    <?php
     $this->Model->bindModel(
         array('associationName' => array(
                 'associatedModelClassName' => array(
@@ -940,9 +959,7 @@ message, and a second to the user that receives the message. The
 messages table will have a field user\_id, but also a field
 recipient\_id. Now your Message model can look something like::
 
-    <?php
     class Message extends AppModel {
-        public $name = 'Message';
         public $belongsTo = array(
             'Sender' => array(
                 'className' => 'User',
@@ -958,9 +975,7 @@ recipient\_id. Now your Message model can look something like::
 Recipient is an alias for the User model. Now let's see what the
 User model would look like::
 
-    <?php
     class User extends AppModel {
-        public $name = 'User';
         public $hasMany = array(
             'MessageSent' => array(
                 'className' => 'Message',
@@ -975,17 +990,15 @@ User model would look like::
 
 It is also possible to create self associations as shown below::
 
-    <?php
     class Post extends AppModel {
-        public $name = 'Post';
-        
+
         public $belongsTo = array(
             'Parent' => array(
                 'className' => 'Post',
                 'foreignKey' => 'parent_id'
             )
         );
-    
+
         public $hasMany = array(
             'Children' => array(
                 'className' => 'Post',
@@ -999,6 +1012,8 @@ It is also possible to create self associations as shown below::
 If your table has ``parent_id`` field you can also use :ref:`model-find-threaded`
 to fetch nested array of records using a single query without
 setting up any associations.
+
+.. _joining-tables:
 
 Joining tables
 --------------
@@ -1025,7 +1040,6 @@ To force a join between tables you need to use the "modern" syntax
 for Model::find(), adding a 'joins' key to the $options array. For
 example::
 
-    <?php
     $options['joins'] = array(
         array('table' => 'channels',
             'alias' => 'Channel',
@@ -1035,7 +1049,7 @@ example::
             )
         )
     );
-    
+
     $Item->find('all', $options);
 
 .. note::
@@ -1058,7 +1072,6 @@ The keys that define the join are the following:
 With joins, you could add conditions based on Related model
 fields::
 
-    <?php
     $options['joins'] = array(
         array('table' => 'channels',
             'alias' => 'Channel',
@@ -1068,11 +1081,11 @@ fields::
             )
         )
     );
-    
+
     $options['conditions'] = array(
         'Channel.private' => 1
     );
-    
+
     $privateItems = $Item->find('all', $options);
 
 You could perform several joins as needed in hasAndBelongsToMany:
@@ -1082,7 +1095,6 @@ uses a books\_tags table as join table, so you need to join the
 books table to the books\_tags table, and this with the tags
 table::
 
-    <?php
     $options['joins'] = array(
         array('table' => 'books_tags',
             'alias' => 'BooksTag',
@@ -1099,11 +1111,11 @@ table::
             )
         )
     );
-    
+
     $options['conditions'] = array(
         'Tag.tag' => 'Novel'
     );
-    
+
     $books = $Book->find('all', $options);
 
 Using joins allows you to have a maximum flexibility in how CakePHP handles associations

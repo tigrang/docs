@@ -15,20 +15,20 @@ Containable allows you to streamline and simplify operations on
 your model bindings. It works by temporarily or permanently
 altering the associations of your models. It does this by using
 supplied the containments to generate a series of ``bindModel`` and
-``unbindModel`` calls.
+``unbindModel`` calls. Since Containable only modifies existing relationships it
+will not allow you to restrict results by distant associations. Instead
+you should refer to :ref:`joining-tables`.
 
 To use the new behavior, you can add it to the $actsAs property of
 your model::
 
-    <?php
     class Post extends AppModel {
         public $actsAs = array('Containable');
     }
 
 You can also attach the behavior on the fly::
 
-    <?php
-    $this->Post->Behaviors->attach('Containable');
+    $this->Post->Behaviors->load('Containable');
 
 .. _using-containable:
 
@@ -41,9 +41,8 @@ that Post hasMany Comment, and Post hasAndBelongsToMany Tag. The
 amount of data fetched in a normal find() call is rather
 extensive::
 
-    <?php
     debug($this->Post->find('all'));
-    
+
     [0] => Array
             (
                 [Post] => Array
@@ -103,14 +102,12 @@ returns.
 For example, to get only the post-related information, you can do
 the following::
 
-    <?php
     $this->Post->contain();
     $this->Post->find('all');
 
 You can also invoke Containable's magic from inside the find()
 call::
 
-    <?php
     $this->Post->find('all', array('contain' => false));
 
 Having done that, you end up with something a lot more concise::
@@ -139,7 +136,6 @@ Having done that, you end up with something a lot more concise::
 This sort of help isn't new: in fact, you can do that without the
 ``ContainableBehavior`` doing something like this::
 
-    <?php
     $this->Post->recursive = -1;
     $this->Post->find('all');
 
@@ -155,13 +151,11 @@ of names, of the models to keep in the find operation. If we wanted
 to fetch all posts and their related tags (without any comment
 information), we'd try something like this::
 
-    <?php
     $this->Post->contain('Tag');
     $this->Post->find('all');
 
 Again, we can use the contain key inside a find() call::
 
-    <?php
     $this->Post->find('all', array('contain' => 'Tag'));
 
 Without Containable, you'd end up needing to use the
@@ -178,12 +172,11 @@ find() call, notice the author field in the Comment model. If you
 are interested in the posts and the names of the comment authors —
 and nothing else — you could do something like the following::
 
-    <?php
     $this->Post->contain('Comment.author');
     $this->Post->find('all');
-    
+
     // or..
-    
+
     $this->Post->find('all', array('contain' => 'Comment.author'));
 
 Here, we've told Containable to give us our post information, and
@@ -222,12 +215,11 @@ As you can see, the Comment arrays only contain the author field
 You can also filter the associated Comment data by specifying a
 condition::
 
-    <?php
     $this->Post->contain('Comment.author = "Daniel"');
     $this->Post->find('all');
-    
+
     //or...
-    
+
     $this->Post->find('all', array('contain' => 'Comment.author = "Daniel"'));
 
 This gives us a result that gives us posts with comments authored
@@ -259,7 +251,6 @@ by Daniel::
 
 Additional filtering can be performed by supplying the standard :ref:`model-find` options::
 
-    <?php
     $this->Post->find('all', array('contain' => array(
         'Comment' => array(
             'conditions' => array('Comment.author =' => "Daniel"),
@@ -279,7 +270,6 @@ Let's consider the following model associations::
 
 This is how we retrieve the above associations with Containable::
 
-    <?php
     $this->User->find('all', array(
         'contain' => array(
             'Profile',
@@ -335,28 +325,26 @@ more easily.
 
 You can change ContainableBehavior settings at run time by
 reattaching the behavior as seen in
-:doc:`/models/additional-methods-and-properties`
+:doc:`/models/behaviors` (Using Behaviors).
 
 ContainableBehavior can sometimes cause issues with other behaviors
 or queries that use aggregate functions and/or GROUP BY statements.
 If you get invalid SQL errors due to mixing of aggregate and
 non-aggregate fields, try disabling the ``autoFields`` setting.::
 
-    <?php
-    $this->Post->Behaviors->attach('Containable', array('autoFields' => false));
+    $this->Post->Behaviors->load('Containable', array('autoFields' => false));
 
 Using Containable with pagination
 =================================
 
 By including the 'contain' parameter in the ``$paginate`` property
 it will apply to both the find('count') and the find('all') done on
-the model
+the model.
 
 See the section :ref:`using-containable` for further details.
 
 Here's an example of how to contain associations when paginating::
 
-    <?php
     $this->paginate['User'] = array(
         'contain' => array('Profile', 'Account'),
         'order' => 'User.username'

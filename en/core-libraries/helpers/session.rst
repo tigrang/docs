@@ -5,9 +5,7 @@ SessionHelper
 
 As a natural counterpart to the Session Component, the Session
 Helper replicates most of the components functionality and makes it
-available in your view. The Session Helper is no longer
-automatically added to your view — so it is necessary to add it to
-the ``$helpers`` array in your controller.
+available in your view.
 
 The major difference between the Session Helper and the Session
 Component is that the helper does *not* have the ability to write
@@ -16,10 +14,9 @@ to the session.
 As with the Session Component, data is read by using
 :term:`dot notation` array structures::
 
-    <?php
-    array('User' => 
-        array('username' => 'super@example.com')
-    );
+    array('User' => array(
+        'username' => 'super@example.com'
+    ));
 
 Given the previous array structure, the node would be accessed by
 ``User.username``, with the dot indicating the nested array. This
@@ -65,10 +62,11 @@ Displaying notifications or flash messages
     display them. Once a message is displayed, it will be removed and 
     not displayed again::
 
-        <?php
         echo $this->Session->flash();
 
-    The above will output a simple message, with the following html::
+    The above will output a simple message, with the following html:
+
+    .. code-block:: html
 
         <div id="flashMessage" class="message">
             Your stuff has been saved.
@@ -78,14 +76,12 @@ Displaying notifications or flash messages
     and customize which element is used. In the controller you might 
     have code like::
 
-        <?php
         // in a controller
         $this->Session->setFlash('The user could not be deleted.');
 
     When outputting this message, you can choose the element used to display
     this message::
 
-        <?php 
         // in a layout.
         echo $this->Session->flash('flash', array('element' => 'failure'));
 
@@ -93,16 +89,17 @@ Displaying notifications or flash messages
     message text would be available as ``$message`` in the element.
 
     Inside the failure element file would be something like
-    this::
+    this:
+
+    .. code-block:: php
 
         <div class="flash flash-failure">
-            <?php echo $message ?>
+            <?php echo $message; ?>
         </div>
 
     You can also pass additional parameters into the ``flash()`` method, which
     allow you to generate customized messages::
 
-        <?php
         // In the controller
         $this->Session->setFlash('Thanks for your payment %s');
 

@@ -43,11 +43,10 @@ Dado este tipo de configuração, eu preciso editar meu arquivo webroot/index.ph
 (que vai acabar em /var/www/mysite/index.php, neste exemplo) para algo como o
 seguinte::
 
-    <?php
     // /app/webroot/index.php (parcial, comentários removidos) 
     
     if (!defined('ROOT')) {
-        define('ROOT', DS.'home'.DS.'me');
+        define('ROOT', DS . 'home' . DS . 'me');
     }
     
     if (!defined('APP_DIR')) {
@@ -55,7 +54,7 @@ seguinte::
     }
     
     if (!defined('CAKE_CORE_INCLUDE_PATH')) {
-        define('CAKE_CORE_INCLUDE_PATH', DS.'usr'.DS.'lib');
+        define('CAKE_CORE_INCLUDE_PATH', DS . 'usr' . DS . 'lib');
     }
 
 Recomenda-se a utilização da constante ``DS`` ao invés das barras para
@@ -138,7 +137,7 @@ sistema e não o de um usuário ou de um site específico).
            RewriteEngine On
            RewriteCond %{REQUEST_FILENAME} !-d
            RewriteCond %{REQUEST_FILENAME} !-f
-           RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+           RewriteRule ^(.*)$ index.php [QSA,L]
        </IfModule>
 
    Para muitos serviços de hospedagem (GoDaddy, 1and1), seu servidor web
@@ -157,7 +156,7 @@ sistema e não o de um usuário ou de um site específico).
            RewriteBase /path/to/cake/app
            RewriteCond %{REQUEST_FILENAME} !-d
            RewriteCond %{REQUEST_FILENAME} !-f
-           RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
+           RewriteRule ^(.*)$ index.php [QSA,L]
        </IfModule>
 
    Os detalhes dessa mudança vai depender de sua configuração, e pode incluir
@@ -270,30 +269,27 @@ mas no mínimo, você irá precisar do PHP sendo executado como FastCGI.
     server {
         listen   80;
         server_name example.com;
-
+    
+        # root directive should be global
+        root   /var/www/example.com/public/app/webroot/;
+        index  index.php;
+        
         access_log /var/www/example.com/log/access.log;
         error_log /var/www/example.com/log/error.log;
 
         location / {
-            root   /var/www/example.com/public/app/webroot/;
-            index  index.php index.html index.htm;
-            if (-f $request_filename) {
-                break;
-            }
-            if (-d $request_filename) {
-                break;
-            }
-            rewrite ^(.+)$ /index.php?q=$1 last;
+            try_files $uri $uri/ /index.php?$uri&$args;
         }
 
-        location ~ .*\.php[345]?$ {
-            include /etc/nginx/fcgi.conf;
-            fastcgi_pass    127.0.0.1:10005;
+        location ~ \.php$ {
+            include /etc/nginx/fastcgi_params;
+            try_files $uri =404;
+            fastcgi_pass    127.0.0.1:9000;
             fastcgi_index   index.php;
-            fastcgi_param SCRIPT_FILENAME /var/www/example.com/public/app/webroot$fastcgi_script_name;
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
         }
     }
-
+    
 URL Rewrites no IIS7 (Windows hosts)
 ====================================
 
